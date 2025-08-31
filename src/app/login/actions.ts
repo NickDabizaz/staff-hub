@@ -1,32 +1,35 @@
 "use server";
 
+import { cookies } from "next/headers";
+import { supabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
-import { supabase } from "../lib/supabase";
 
-export type LoginState = { error?: string };
-
-// React 19 server action signature for useActionState
-export async function loginAction(
-  _prevState: LoginState,
-  payload: { email: string; password: string }
-): Promise<LoginState> {
-  const { email, password } = payload;
-
-  if (!email || !password) {
-    return { error: "Email dan password wajib diisi" };
-  }
-
-  const { data: user, error } = await supabase
+export async function loginAction(payload: { email: string; password: string }) {
+  const email = payload?.email ?? "";
+  const password = payload?.password ?? "";
+  const sb = supabaseServer();
+  const { data: user, error } = await sb
     .from("users")
-    .select("user_password")
+    .select("user_id,user_name,user_email,user_password,user_system_role")
     .eq("user_email", email)
     .single();
 
   if (error || !user || user.user_password !== password) {
-    return { error: "Email atau password salah" };
+    const c = await cookies();
+    c.set("sb_login_error", "Email atau password salah", { path: "/login", maxAge: 5 });
+    redirect("/login");
   }
 
-  // sukses → langsung redirect (tanpa session/cookie dulu)
+  const c = await cookies();
+  c.set(
+    "sb_user",
+    JSON.stringify({
+      id: user.user_id,
+      name: user.user_name,
+      role: user.user_system_role,
+      email: user.user_email,
+    }),
+    { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 7 }
+  );
   redirect("/");
-  return {};
 }

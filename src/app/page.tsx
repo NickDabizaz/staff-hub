@@ -1,8 +1,14 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-export default function Dashboard() {
-  const raw = cookies().get("sb_user")?.value;
+export default async function Dashboard() {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
+
+  if (user?.role === "ADMIN") {
+    redirect("/admin");
+  }
 
   return (
     <main className="p-6 space-y-2">

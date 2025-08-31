@@ -1,35 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { loginAction } from "../actions";
 
-export default function LoginForm() {
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
+export default function LoginForm() { 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
     const fd = new FormData(e.currentTarget);
-    const email = String(fd.get("email") || "");
-    const password = String(fd.get("password") || "");
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({ error: "Gagal login" }));
-        setError(j.error || "Gagal login");
-      } else {
-        window.location.href = "/";
-      }
-    } catch {
-      setError("Terjadi kesalahan jaringan");
-    } finally {
-      setLoading(false);
-    }
+    await loginAction({
+      email: String(fd.get("email") || ""),
+      password: String(fd.get("password") || ""),
+    });
   }
 
   return (
@@ -58,11 +38,9 @@ export default function LoginForm() {
         />
       </div>
 
-  {error && <p className="text-sm text-red-600">{error}</p>}
+  {/* Error akan ditampilkan via cookie sb_login_error jika diperlukan */}
 
-      <button disabled={loading} type="submit" className="w-full rounded bg-black text-white py-2 disabled:opacity-50">
-        {loading ? "Memproses..." : "Masuk"}
-      </button>
+  <button type="submit" className="w-full rounded bg-black text-white py-2">Masuk</button>
     </form>
   );
 }
