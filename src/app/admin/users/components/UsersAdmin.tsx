@@ -39,10 +39,15 @@ const emptyForm: FormState = {
   role: "STAFF",
 };
 
+import type { TeamWithMembers, TeamMemberRow } from "@/app/admin/teams/types/teamTypes";
+import { createTeamAction, addTeamMemberAction, removeTeamMemberAction } from "@/app/admin/teams/actions";
+
 export default function UsersAdmin({
   initialUsers,
+  initialTeams,
 }: {
   initialUsers: UserRow[];
+  initialTeams: TeamWithMembers[];
 }) {
   const router = useRouter();
 
@@ -59,9 +64,19 @@ export default function UsersAdmin({
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
+  // Teams state
+  const [teams, setTeams] = useState<TeamWithMembers[]>(initialTeams);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [teamName, setTeamName] = useState("");
+  const [pmId, setPmId] = useState<number | "">("");
+  const [memberIds, setMemberIds] = useState<number[]>([]);
+
   useEffect(() => {
     setUsers(initialUsers);
   }, [initialUsers]);
+  useEffect(() => {
+    setTeams(initialTeams);
+  }, [initialTeams]);
 
   function onFormChange<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm((s) => ({ ...s, [key]: val }));
@@ -141,6 +156,80 @@ export default function UsersAdmin({
       const msg = e instanceof Error ? e.message : "Terjadi kesalahan";
       setError(msg);
       await Swal.fire({ icon: "error", title: msg });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ==== Teams handlers ====
+  const pmOptions = useMemo(() => users.filter((u) => u.user_system_role === "PM"), [users]);
+  const memberOptions = useMemo(() => users, [users]);
+
+  async function handleCreateTeam(e: React.FormEvent) {
+    e.preventDefault();
+    if (!teamName.trim() || !pmId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.set("team_name", teamName.trim());
+      fd.set("pm_user_id", String(pmId));
+      fd.set("member_user_ids", JSON.stringify(memberIds));
+
+      const created = await createTeamAction(fd);
+
+      setTeams((arr) => [...arr, created]);
+      setTeamModalOpen(false);
+      setTeamName("");
+      setPmId("");
+      setMemberIds([]);
+      await Swal.fire({ icon: "success", title: "Tim dibuat", timer: 1200, showConfirmButton: false });
+    } catch (e: any) {
+      setError(e?.message ?? "Gagal membuat tim");
+      await Swal.fire({ icon: "error", title: "Gagal", text: String(e?.message || e) });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAddMember(team_id: number, user_id: number) {
+    if (!user_id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.set("team_id", String(team_id));
+      fd.set("user_id", String(user_id));
+      fd.set("role", "STAFF");
+      const newMember: TeamMemberRow = await addTeamMemberAction(fd);
+      setTeams((arr) =>
+        arr.map((t) => (t.team_id === team_id ? { ...t, members: [...t.members, newMember] } : t))
+      );
+    } catch (e: any) {
+      setError(e?.message ?? "Gagal tambah member");
+      await Swal.fire({ icon: "error", title: "Gagal", text: String(e?.message || e) });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRemoveMember(team_id: number, team_member_id: number) {
+    setLoading(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.set("team_member_id", String(team_member_id));
+      await removeTeamMemberAction(fd);
+      setTeams((arr) =>
+        arr.map((t) =>
+          t.team_id === team_id
+            ? { ...t, members: t.members.filter((m) => m.team_member_id !== team_member_id) }
+            : t
+        )
+      );
+    } catch (e: any) {
+      setError(e?.message ?? "Gagal hapus member");
+      await Swal.fire({ icon: "error", title: "Gagal", text: String(e?.message || e) });
     } finally {
       setLoading(false);
     }
@@ -386,8 +475,164 @@ export default function UsersAdmin({
           </div>
         </section>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {/* Teams Section */}
+        <section className="mt-12">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Teams</h2>
+            <button
+              className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 px-3 py-2 text-sm"
+              onClick={() => setTeamModalOpen(true)}
+              disabled={loading}
+            >
+              <Plus className="size-4" /> Tambah Team
+            </button>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-white/10">
+            <table className="w-full text-sm">
+              <thead className="bg-white/5">
+                <tr>
+                  <Th>Team ID</Th>
+                  <Th>Nama</Th>
+                  <Th center>Anggota</Th>
+                  <Th>PM</Th>
+                  <Th center>Aksi</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {teams.length === 0 ? (
+                  <tr>
+                    <Td className="py-6 text-center text-neutral-400" colSpan={5}>
+                      Belum ada tim
+                    </Td>
+                  </tr>
+                ) : (
+                  teams.map((t) => {
+                    const pms = t.members.filter((m) => m.team_member_role === "PM");
+                    const pmName = pms[0]?.user?.user_name ?? "-";
+                    return (
+                      <tr key={t.team_id} className="border-t border-white/10">
+                        <Td className="w-16">{t.team_id}</Td>
+                        <Td>
+                          <div className="font-medium">
+                            {/* Link ke detail (belum fungsional) */}
+                            <Link href={`#`} className="underline decoration-dotted hover:decoration-solid">
+                              {t.team_name}
+                            </Link>
+                          </div>
+                        </Td>
+                        <Td center>{t.members.length}</Td>
+                        <Td>{pmName}</Td>
+                        <Td center>
+                          <TeamMembersInline
+                            team={t}
+                            allUsers={memberOptions}
+                            onAdd={(uid) => handleAddMember(t.team_id, uid)}
+                            onRemove={(mid) => handleRemoveMember(t.team_id, mid)}
+                          />
+                        </Td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {error && <p className="text-sm text-red-400 mt-3">{error}</p>}
       </main>
+
+      {teamModalOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
+          <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-neutral-950 p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Buat Tim</h3>
+              <button
+                className="rounded-lg border border-white/10 px-2 py-1 text-xs hover:bg-white/10"
+                onClick={() => setTeamModalOpen(false)}
+              >
+                Tutup
+              </button>
+            </div>
+            <form onSubmit={handleCreateTeam} className="space-y-3">
+              <FloatingInput
+                label="Nama Tim"
+                value={teamName}
+                onChange={setTeamName}
+                placeholder="Contoh: Squad Billing"
+                icon={<Shield className="size-4" />}
+                required
+              />
+
+              {/* PM select */}
+              <div>
+                <span className="mb-1 block text-xs uppercase tracking-wider text-neutral-300">
+                  Project Manager (PM)
+                </span>
+                <div className="relative">
+                  <select
+                    value={pmId === "" ? "" : String(pmId)}
+                    onChange={(e) => setPmId(e.target.value ? Number(e.target.value) : "")}
+                    required
+                    className="w-full appearance-none rounded-xl bg-white/5 border border-white/10 px-3 py-3 pr-9 focus:outline-none focus:ring-2 focus:ring-white/30"
+                  >
+                    <option value="">Pilih PM</option>
+                    {pmOptions.map((u) => (
+                      <option key={u.user_id} value={u.user_id}>
+                        {u.user_name} ({u.user_email})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 opacity-70" />
+                </div>
+              </div>
+
+              {/* Members multiselect */}
+              <div>
+                <span className="mb-1 block text-xs uppercase tracking-wider text-neutral-300">
+                  Anggota (opsional)
+                </span>
+                <div className="relative">
+                  <select
+                    multiple
+                    value={memberIds.map(String)}
+                    onChange={(e) => {
+                      const vals = Array.from(e.target.selectedOptions).map((o) => Number(o.value));
+                      setMemberIds(vals);
+                    }}
+                    className="h-40 w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/30"
+                  >
+                    {memberOptions.map((u) => (
+                      <option key={u.user_id} value={u.user_id}>
+                        {u.user_name} ({u.user_email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="mt-1 text-xs text-neutral-400">PM akan otomatis ditambahkan sebagai anggota (role PM).</p>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/10"
+                  onClick={() => setTeamModalOpen(false)}
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm"
+                >
+                  <Plus className="size-4" /> Buat Tim
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -397,12 +642,14 @@ export default function UsersAdmin({
 function Th({
   children,
   center,
+  classNameOverride,
 }: {
   children: React.ReactNode;
   center?: boolean;
+  classNameOverride?: string;
 }) {
   return (
-    <th className={`px-4 py-3 font-semibold ${center ? "text-center" : ""}`}>
+    <th className={`${classNameOverride ?? "px-4 py-3 font-semibold"} ${center ? "text-center" : ""}`}>
       {children}
     </th>
   );
@@ -412,16 +659,19 @@ function Td({
   children,
   className = "",
   center = false,
+  colSpan,
 }: {
   children: React.ReactNode;
   className?: string;
   center?: boolean;
+  colSpan?: number;
 }) {
   return (
     <td
       className={`px-4 py-3 align-middle ${
         center ? "text-center" : ""
       } ${className}`}
+      colSpan={colSpan}
     >
       {children}
     </td>
@@ -467,6 +717,77 @@ function FloatingInput({
         {label}
       </span>
     </label>
+  );
+}
+
+function TeamMembersInline({
+  team,
+  allUsers,
+  onAdd,
+  onRemove,
+}: {
+  team: TeamWithMembers;
+  allUsers: UserRow[];
+  onAdd: (userId: number) => void;
+  onRemove: (teamMemberId: number) => void;
+}) {
+  const [addingUserId, setAddingUserId] = useState<number | "">("");
+  const candidates = allUsers.filter(
+    (u) => !team.members.some((m) => m.user.user_id === u.user_id)
+  );
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {team.members.map((m) => (
+          <span
+            key={m.team_member_id}
+            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
+            title={m.user.user_email}
+          >
+            {m.user.user_name}
+            {m.team_member_role === "PM" && (
+              <span className="ml-1 rounded bg-amber-500/20 px-1 text-[10px] text-amber-300">PM</span>
+            )}
+            {m.team_member_role !== "PM" && (
+              <button
+                className="ml-1 rounded bg-red-500/10 px-1 text-[10px] text-red-300 hover:bg-red-500/20"
+                onClick={() => onRemove(m.team_member_id)}
+                title="Hapus"
+              >
+                x
+              </button>
+            )}
+          </span>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <select
+          value={addingUserId === "" ? "" : String(addingUserId)}
+          onChange={(e) => setAddingUserId(e.target.value ? Number(e.target.value) : "")}
+          className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs"
+        >
+          <option value="">+ anggota</option>
+          {candidates.map((u) => (
+            <option key={u.user_id} value={u.user_id}>
+              {u.user_name}
+            </option>
+          ))}
+        </select>
+        <button
+          className="rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-xs hover:bg-white/15"
+          onClick={() => {
+            if (addingUserId !== "") {
+              onAdd(Number(addingUserId));
+              setAddingUserId("");
+            }
+          }}
+        >
+          Tambah
+        </button>
+      </div>
+    </div>
   );
 }
 
