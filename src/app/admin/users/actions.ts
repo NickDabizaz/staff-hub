@@ -1,67 +1,75 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { supabaseServer } from "@/lib/supabase-server";
+import {
+  CreateUserSchema,
+  UpdateUserSchema,
+  DeleteUserSchema,
+} from "./schemas/usersSchemas";
+import {
+  createUserService,
+  deleteUserService,
+  updateUserService,
+} from "./services/userService";
 
-type SessionUser = { id: number; name: string; email: string; role: "ADMIN" | "PM" | "STAFF" };
+/**
+ * Actions: parsing FormData -> validasi Zod -> panggil service -> revalidate
+ * Tidak ada query langsung di sini.
+ */
 
-function ensureAdmin(user: SessionUser | null) {
-  if (!user || user.role !== "ADMIN") throw new Error("FORBIDDEN");
+function parseNumber(value: FormDataEntryValue | null): number {
+  return Number(value ?? NaN);
 }
 
 export async function createUserAction(formData: FormData) {
-  const cookieStore = await cookies();
-  const raw = cookieStore.get("sb_user")?.value;
-  const me: SessionUser | null = raw ? JSON.parse(raw) : null;
-  ensureAdmin(me);
+  const payload = {
+    name: String(formData.get("name") || ""),
+    email: String(formData.get("email") || ""),
+    password: String(formData.get("password") || ""),
+    role: String(formData.get("role") || "STAFF"),
+  };
 
-  const user_name = String(formData.get("name") || "").trim();
-  const user_email = String(formData.get("email") || "").trim();
-  const user_password = String(formData.get("password") || "").trim();
-  const user_system_role = String(formData.get("role") || "STAFF");
-  if (!user_name || !user_email || !user_password) return;
+  const parsed = CreateUserSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input");
+  }
 
-  const sb = supabaseServer();
-  await sb.from("users").insert({
-    user_name,
-    user_email,
-    user_password,
-    user_system_role,
-  });
+  const res = await createUserService(parsed.data);
+  if (!res.ok) throw new Error(res.error);
+
   revalidatePath("/admin/users");
 }
 
 export async function updateUserAction(formData: FormData) {
-  const cookieStore = await cookies();
-  const raw = cookieStore.get("sb_user")?.value;
-  const me: SessionUser | null = raw ? JSON.parse(raw) : null;
-  ensureAdmin(me);
+  const payload = {
+    id: parseNumber(formData.get("id")),
+    name: String(formData.get("name") || ""),
+    role: formData.get("role") ? String(formData.get("role")) : undefined,
+    password: formData.get("password")
+      ? String(formData.get("password"))
+      : undefined,
+  };
 
-  const id = Number(formData.get("id"));
-  const user_name = String(formData.get("name") || "").trim();
-  const user_system_role = String(formData.get("role") || "");
-  if (!Number.isFinite(id)) return;
+  const parsed = UpdateUserSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input");
+  }
 
-  const update: Record<string, unknown> = {};
-  if (user_name) update.user_name = user_name;
-  if (user_system_role) update.user_system_role = user_system_role;
+  const res = await updateUserService(parsed.data);
+  if (!res.ok) throw new Error(res.error);
 
-  if (Object.keys(update).length === 0) return;
-  const sb = supabaseServer();
-  await sb.from("users").update(update).eq("user_id", id);
   revalidatePath("/admin/users");
 }
 
 export async function deleteUserAction(formData: FormData) {
-  const cookieStore = await cookies();
-  const raw = cookieStore.get("sb_user")?.value;
-  const me: SessionUser | null = raw ? JSON.parse(raw) : null;
-  ensureAdmin(me);
+  const payload = { id: parseNumber(formData.get("id")) };
+  const parsed = DeleteUserSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input");
+  }
 
-  const id = Number(formData.get("id"));
-  if (!Number.isFinite(id)) return;
-  const sb = supabaseServer();
-  await sb.from("users").delete().eq("user_id", id);
+  const res = await deleteUserService(parsed.data.id);
+  if (!res.ok) throw new Error(res.error);
+
   revalidatePath("/admin/users");
 }
