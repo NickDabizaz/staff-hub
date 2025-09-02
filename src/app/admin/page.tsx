@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
   // definisi menu
   const menus = [
     {
-      href: "/",
+      href: "/admin/dashboard",
       title: "Dashboard",
       subtitle: "Halaman utama untuk ringkasan aktivitas dan laporan.",
     },
