@@ -1,7 +1,7 @@
 "use server";
 
 import { supabaseServer } from "@/lib/supabase-server";
-import { Result, ok, err } from "@/app/admin/users/types/userTypes";
+import { Result, ok, err } from "@/lib/result";
 import {
   TeamWithMembers,
   TeamMemberRow,

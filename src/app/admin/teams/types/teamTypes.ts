@@ -1,3 +1,5 @@
+import { Result } from "@/lib/result";
+
 export type TeamMemberRole = "PM" | "STAFF";
 
 export type TeamRow = {
