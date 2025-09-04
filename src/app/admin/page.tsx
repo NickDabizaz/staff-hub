@@ -22,6 +22,11 @@ export default async function AdminDashboard() {
       title: "Users",
       subtitle: "Kelola data pengguna, hak akses, dan tim.",
     },
+    {
+      href: "/admin/projects",
+      title: "Projects",
+      subtitle: "Kelola project dan tim yang mengerjakan project.",
+    },
   ];
 
   return (

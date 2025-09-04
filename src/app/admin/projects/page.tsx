@@ -1,0 +1,46 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { listTeamsService } from "@/app/admin/teams/services/teamService";
+import { listProjectsService } from "./services/projectService";
+import ProjectsList from "./components/ProjectsList";
+
+export default async function ProjectsPage() {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get("sb_user")?.value;
+  const user = raw ? JSON.parse(raw) : null;
+
+  if (!user) redirect("/login");
+  if (user.role !== "ADMIN") redirect("/");
+
+  const teamsRes = await listTeamsService();
+  const teams = teamsRes.ok ? teamsRes.data : [];
+
+  const projectsRes = await listProjectsService();
+  const projects = projectsRes.ok ? projectsRes.data : [];
+
+  return (
+    <main className="p-6 space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Projects</h1>
+        <Link href="/admin" className="underline text-sm">
+          Kembali
+        </Link>
+      </header>
+
+      <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/0 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.05)]">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold">Daftar Projects</h3>
+          <Link 
+            href="/admin/projects/new" 
+            className="inline-flex items-center gap-2 rounded-xl bg-white text-black px-3 py-1.5 text-sm font-semibold shadow hover:shadow-lg"
+          >
+            Tambah Project
+          </Link>
+        </div>
+        
+        <ProjectsList projects={projects} teams={teams} />
+      </section>
+    </main>
+  );
+}
