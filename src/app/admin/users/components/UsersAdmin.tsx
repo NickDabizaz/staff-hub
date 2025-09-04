@@ -84,9 +84,14 @@ export default function UsersAdmin({
 
   function startEdit(u: UserRow) {
     setEditingUser(u);
+    // Hapus domain staffhub.com jika ada saat mengedit
+    const emailWithoutDomain = u.user_email.endsWith('@staffhub.com') 
+      ? u.user_email.replace('@staffhub.com', '') 
+      : u.user_email;
+      
     setForm({
       name: u.user_name,
-      email: u.user_email,
+      email: emailWithoutDomain,
       password: "",
       role: u.user_system_role,
     });
@@ -117,7 +122,12 @@ export default function UsersAdmin({
     try {
       const fd = new FormData();
       fd.set("name", form.name);
-      fd.set("email", form.email);
+      
+      // Untuk user baru, tambahkan domain staffhub.com
+      // Untuk edit user, gunakan email asli
+      const email = editingUser ? form.email : `${form.email}@staffhub.com`;
+      fd.set("email", email);
+      
       fd.set("role", form.role);
       if (form.password) fd.set("password", form.password);
 
@@ -315,14 +325,13 @@ export default function UsersAdmin({
               onChange={(v) => onFormChange("name", v)}
               placeholder="Nama"
             />
-            <FloatingInput
+            <FloatingInputWithDomain
               className="md:col-span-4"
               icon={<Mail className="size-4" />}
-              type="email"
               label="Email"
               value={form.email}
               onChange={(v) => onFormChange("email", v)}
-              placeholder="Email"
+              placeholder="username"
               disabled={!!editingUser}
             />
             <FloatingInput
@@ -825,5 +834,51 @@ function RoleSelect({
         <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 opacity-70" />
       </div>
     </div>
+  );
+}
+
+function FloatingInputWithDomain({
+  label,
+  value,
+  onChange,
+  placeholder,
+  icon,
+  className = "",
+  disabled = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  icon?: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
+}) {
+  // Hapus domain staffhub.com jika ada saat menampilkan di input
+  const displayValue = value.endsWith('@staffhub.com') 
+    ? value.replace('@staffhub.com', '') 
+    : value;
+
+  return (
+    <label className={`relative block ${className}`}>
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 opacity-70">
+        {icon}
+      </span>
+      <div className="flex">
+        <input
+          value={displayValue}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="w-full rounded-l-xl bg-white/5 border border-white/10 border-r-0 pl-9 pr-3 py-3 placeholder:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:opacity-60"
+        />
+        <div className="flex items-center rounded-r-xl bg-white/5 border border-white/10 px-3 text-sm">
+          @staffhub.com
+        </div>
+      </div>
+      <span className="absolute left-3 -top-2 bg-neutral-950 px-1 text-[10px] uppercase tracking-wider text-neutral-300">
+        {label}
+      </span>
+    </label>
   );
 }
