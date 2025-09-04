@@ -42,7 +42,7 @@ export async function createTeamAction(formData: FormData) {
   const res = await createTeamService(parsed.data);
   if (!res.ok) throw new Error(res.error);
 
-  revalidatePath("/admin/users");
+  revalidatePath("/admin/teams");
   return res.data; // TeamWithMembers
 }
 
@@ -61,7 +61,7 @@ export async function addTeamMemberAction(formData: FormData) {
   const res = await addTeamMemberService(parsed.data as any);
   if (!res.ok) throw new Error(res.error);
 
-  revalidatePath("/admin/users");
+  revalidatePath("/admin/teams");
   return res.data; // TeamMemberRow
 }
 
@@ -75,6 +75,6 @@ export async function removeTeamMemberAction(formData: FormData) {
   const res = await removeTeamMemberService(parsed.data.team_member_id);
   if (!res.ok) throw new Error(res.error);
 
-  revalidatePath("/admin/users");
+  revalidatePath("/admin/teams");
 }
 

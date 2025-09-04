@@ -20,7 +20,12 @@ export default async function AdminDashboard() {
     {
       href: "/admin/users",
       title: "Users",
-      subtitle: "Kelola data pengguna, hak akses, dan tim.",
+      subtitle: "Kelola data pengguna dan hak akses.",
+    },
+    {
+      href: "/admin/teams",
+      title: "Teams",
+      subtitle: "Kelola tim dan anggotanya.",
     },
     {
       href: "/admin/projects",
