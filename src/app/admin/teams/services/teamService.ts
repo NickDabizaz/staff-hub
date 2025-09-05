@@ -3,13 +3,9 @@
 import { cookies } from "next/headers";
 import { err, ok, Result } from "@/lib/result";
 import { SessionUser } from "@/app/admin/users/types/userTypes";
-import {
-  addTeamMemberRepo,
-  createTeamWithMembersRepo,
-  listTeamsWithMembersRepo,
-  removeTeamMemberRepo,
-} from "../data/teamsRepo";
+
 import { TeamMemberRole, TeamMemberRow, TeamWithMembers } from "../types/teamTypes";
+import { addTeamMemberRepo, createTeamWithMembersRepo, listTeamsWithMembersRepo, removeTeamMemberRepo, updateTeamMembersRepo, updateTeamPMRepo } from "../data/teamsRepo";
 
 // Helpers (mirrored from userService)
 async function currentUser(): Promise<SessionUser | null> {
@@ -64,4 +60,26 @@ export async function removeTeamMemberService(
   if (!auth.ok) return auth;
 
   return await removeTeamMemberRepo(team_member_id);
+}
+
+export async function updateTeamPMService(input: {
+  team_id: number;
+  pm_user_id: number;
+}): Promise<Result<null>> {
+  const me = await currentUser();
+  const auth = ensureAdmin(me);
+  if (!auth.ok) return auth;
+
+  return await updateTeamPMRepo(input);
+}
+
+export async function updateTeamMembersService(input: {
+  team_id: number;
+  member_user_ids: number[];
+}): Promise<Result<null>> {
+  const me = await currentUser();
+  const auth = ensureAdmin(me);
+  if (!auth.ok) return auth;
+
+  return await updateTeamMembersRepo(input);
 }

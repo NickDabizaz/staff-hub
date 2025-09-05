@@ -15,3 +15,13 @@ export const AddTeamMemberSchema = z.object({
 export const RemoveTeamMemberSchema = z.object({
   team_member_id: z.number().int().positive(),
 });
+
+export const UpdateTeamPMSchema = z.object({
+  team_id: z.number().int().positive(),
+  pm_user_id: z.number().int().positive("PM wajib dipilih"),
+});
+
+export const UpdateTeamMembersSchema = z.object({
+  team_id: z.number().int().positive(),
+  member_user_ids: z.array(z.number().int().positive()).default([]),
+});

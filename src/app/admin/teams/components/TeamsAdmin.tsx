@@ -10,6 +10,7 @@ import {
   addTeamMemberAction,
   removeTeamMemberAction,
 } from "../actions";
+import TeamDetailModal from "./TeamDetailModal";
 import type { UserRow } from "@/app/admin/users/types/userTypes";
 import type { TeamWithMembers, TeamMemberRow } from "../types/teamTypes";
 import {
@@ -51,6 +52,10 @@ export default function TeamsAdmin({
   const [pmId, setPmId] = useState<number | "">("");
   const [memberIds, setMemberIds] = useState<number[]>([]);
 
+  // detail modal
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<TeamWithMembers | null>(null);
+
   useEffect(() => {
     setTeams(initialTeams);
   }, [initialTeams]);
@@ -62,6 +67,19 @@ export default function TeamsAdmin({
   // ==== Teams handlers ====
   const pmOptions = useMemo(() => users.filter((u) => u.user_system_role === "PM"), [users]);
   const memberOptions = useMemo(() => users, [users]);
+
+  function openDetailModal(team: TeamWithMembers) {
+    setSelectedTeam(team);
+    setDetailModalOpen(true);
+  }
+
+  async function updateTeamInList(updatedTeam: TeamWithMembers) {
+    setTeams((prev) =>
+      prev.map((t) => (t.team_id === updatedTeam.team_id ? updatedTeam : t))
+    );
+    // Refresh data dari server untuk memastikan konsistensi
+    router.refresh();
+  }
 
   async function handleCreateTeam(e: React.FormEvent) {
     e.preventDefault();
@@ -262,12 +280,13 @@ export default function TeamsAdmin({
                       <Td center>{t.members.length}</Td>
                       <Td>{pmName}</Td>
                       <Td center>
-                        <TeamMembersInline
-                          team={t}
-                          allUsers={memberOptions}
-                          onAdd={(uid) => handleAddMember(t.team_id, uid)}
-                          onRemove={(mid) => handleRemoveMember(t.team_id, mid)}
-                        />
+                        <button
+                          onClick={() => openDetailModal(t)}
+                          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm hover:bg-white/15"
+                        >
+                          <Users className="size-4" />
+                          Detail
+                        </button>
                       </Td>
                     </tr>
                   );
@@ -280,6 +299,7 @@ export default function TeamsAdmin({
 
       {error && <p className="text-sm text-red-400 mt-3">{error}</p>}
 
+      {/* Create Team Modal */}
       {teamModalOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
           <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-neutral-950 p-5">
@@ -369,6 +389,16 @@ export default function TeamsAdmin({
             </form>
           </div>
         </div>
+      )}
+
+      {/* Team Detail Modal */}
+      {detailModalOpen && selectedTeam && (
+        <TeamDetailModal
+          team={selectedTeam}
+          users={users}
+          onClose={() => setDetailModalOpen(false)}
+          onUpdateTeam={updateTeamInList}
+        />
       )}
     </div>
   );

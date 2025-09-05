@@ -5,11 +5,15 @@ import {
   AddTeamMemberSchema,
   CreateTeamSchema,
   RemoveTeamMemberSchema,
+  UpdateTeamPMSchema,
+  UpdateTeamMembersSchema,
 } from "./schemas/teamsSchemas";
 import {
   addTeamMemberService,
   createTeamService,
   removeTeamMemberService,
+  updateTeamPMService,
+  updateTeamMembersService,
 } from "./services/teamService";
 
 function num(v: FormDataEntryValue | null): number {
@@ -76,5 +80,52 @@ export async function removeTeamMemberAction(formData: FormData) {
   if (!res.ok) throw new Error(res.error);
 
   revalidatePath("/admin/teams");
+}
+
+export async function updateTeamPMAction(formData: FormData) {
+  const payload = {
+    team_id: num(formData.get("team_id")),
+    pm_user_id: num(formData.get("pm_user_id")),
+  };
+
+  const parsed = UpdateTeamPMSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input");
+  }
+
+  const res = await updateTeamPMService(parsed.data);
+  if (!res.ok) throw new Error(res.error);
+
+  revalidatePath("/admin/teams");
+  return res.data;
+}
+
+export async function updateTeamMembersAction(formData: FormData) {
+  const rawMembers = String(formData.get("member_user_ids") || "[]");
+  let member_user_ids: number[] = [];
+  try {
+    const parsed = JSON.parse(rawMembers);
+    if (Array.isArray(parsed)) {
+      member_user_ids = parsed.map((x) => Number(x)).filter(Boolean);
+    }
+  } catch (e) {
+    throw new Error("Format members tidak valid");
+  }
+
+  const payload = {
+    team_id: num(formData.get("team_id")),
+    member_user_ids,
+  };
+
+  const parsed = UpdateTeamMembersSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input");
+  }
+
+  const res = await updateTeamMembersService(parsed.data);
+  if (!res.ok) throw new Error(res.error);
+
+  revalidatePath("/admin/teams");
+  return res.data;
 }
 

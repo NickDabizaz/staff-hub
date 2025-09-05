@@ -238,59 +238,7 @@ function Button({ variant, className }: ButtonProps) {
 - Avoid global CSS except for base styles in `globals.css`
 - Use CSS variables for consistent theming
 
-## Testing
 
-### Unit Testing
-
-- Write unit tests for utility functions and complex logic
-- Use Jest for unit testing
-- Aim for high test coverage for critical functionality
-
-### Component Testing
-
-- Test components with React Testing Library
-- Focus on testing behavior rather than implementation details
-- Test user interactions and state changes
-
-### Integration Testing
-
-- Test API integrations and data flow
-- Mock external dependencies when appropriate
-
-## Git Workflow
-
-### Branching Strategy
-
-- Use feature branches for new functionality
-- Branch names should be descriptive (e.g., `feature/user-authentication`)
-- Delete branches after merging
-
-### Commit Messages
-
-- Follow conventional commit format
-- Use present tense and imperative mood
-- Keep subject line under 50 characters
-- Provide detailed body when necessary
-
-```bash
-# Good
-feat(auth): add user login functionality
-fix(dashboard): resolve data loading issue
-docs(readme): update installation instructions
-
-# Avoid
-fixed bug
-updated code
-commit message
-```
-
-### Pull Requests
-
-- Create PRs for all changes (except hotfixes)
-- Include a clear description of the changes
-- Link to relevant issues
-- Request reviews from team members
-- Ensure all tests pass before merging
 
 ## Performance Considerations
 

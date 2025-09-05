@@ -146,3 +146,73 @@ export async function removeTeamMemberRepo(team_member_id: number): Promise<Resu
   return ok(null);
 }
 
+export async function updateTeamPMRepo(input: {
+  team_id: number;
+  pm_user_id: number;
+}): Promise<Result<null>> {
+  const sb = supabaseServer();
+  
+  // 1. Periksa apakah user yang dipilih memang PM
+  const { data: user, error: userErr } = await sb
+    .from("users")
+    .select("user_system_role")
+    .eq("user_id", input.pm_user_id)
+    .single();
+  
+  if (userErr) return err(userErr.message);
+  if (user?.user_system_role !== "PM") return err("Hanya user dengan role PM yang bisa dijadikan Project Manager");
+  
+  // 2. Hapus role PM lama jika ada
+  const { error: removeErr } = await sb
+    .from("team_members")
+    .delete()
+    .match({ team_id: input.team_id, team_member_role: "PM" });
+  
+  if (removeErr) return err(removeErr.message);
+  
+  // 3. Tambahkan PM baru
+  const { error: addErr } = await sb
+    .from("team_members")
+    .insert({
+      team_id: input.team_id,
+      user_id: input.pm_user_id,
+      team_member_role: "PM"
+    });
+  
+  if (addErr) return err(addErr.message);
+  
+  return ok(null);
+}
+
+export async function updateTeamMembersRepo(input: {
+  team_id: number;
+  member_user_ids: number[];
+}): Promise<Result<null>> {
+  const sb = supabaseServer();
+  
+  // 1. Hapus semua anggota STAFF (bukan PM)
+  const { error: removeErr } = await sb
+    .from("team_members")
+    .delete()
+    .match({ team_id: input.team_id, team_member_role: "STAFF" });
+  
+  if (removeErr) return err(removeErr.message);
+  
+  // 2. Tambahkan anggota baru
+  if (input.member_user_ids.length > 0) {
+    const rows = input.member_user_ids.map((user_id) => ({
+      team_id: input.team_id,
+      user_id,
+      team_member_role: "STAFF"
+    }));
+    
+    const { error: insertErr } = await sb
+      .from("team_members")
+      .insert(rows);
+    
+    if (insertErr) return err(insertErr.message);
+  }
+  
+  return ok(null);
+}
+
