@@ -5,7 +5,7 @@ import { Task } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Eye } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useKanban } from "./kanban-context";
+import { EditTaskModal } from "./edit-task-modal";
 
 const priorityColors = {
   LOW: "bg-green-500",
@@ -29,6 +37,28 @@ export function TaskCard({
   onDragStart: (e: React.DragEvent, taskId: number) => void;
 }) {
   const [showDetails, setShowDetails] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const { deleteTask, updateTask } = useKanban();
+
+  const handleDelete = async () => {
+    if (confirm("Apakah Anda yakin ingin menghapus task ini?")) {
+      try {
+        await deleteTask(task.task_id);
+      } catch (error) {
+        console.error("Failed to delete task:", error);
+        alert("Gagal menghapus task");
+      }
+    }
+  };
+
+  const handleUpdateTask = async (updatedTask: Task) => {
+    try {
+      await updateTask(updatedTask);
+    } catch (error) {
+      console.error("Failed to update task:", error);
+      alert("Gagal mengupdate task");
+    }
+  };
 
   return (
     <>
@@ -87,9 +117,23 @@ export function TaskCard({
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setShowEditModal(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    <span>Edit</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Delete</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardHeader>
@@ -124,6 +168,13 @@ export function TaskCard({
           )}
         </CardContent>
       </Card>
+
+      <EditTaskModal
+        task={task}
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        onUpdateTask={handleUpdateTask}
+      />
     </>
   );
 }
