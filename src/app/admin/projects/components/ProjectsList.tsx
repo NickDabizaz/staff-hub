@@ -2,7 +2,14 @@ import Link from "next/link";
 import type { ProjectWithTeams } from "../types/projectTypes";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
 
-// Component to display a list of projects in a table format
+/**
+ * Komponen untuk menampilkan daftar proyek dalam format tabel
+ * Menampilkan informasi dasar setiap proyek seperti nama, deadline, dan tim yang menangani
+ * 
+ * @param projects - Daftar proyek yang akan ditampilkan
+ * @param teams - Daftar tim untuk referensi nama tim
+ * @returns Tabel daftar proyek atau pesan jika tidak ada proyek
+ */
 export default function ProjectsList({ 
   projects, 
   teams 
@@ -10,7 +17,12 @@ export default function ProjectsList({
   projects: ProjectWithTeams[]; 
   teams: TeamWithMembers[]; 
 }) {
-  // Helper function to get team name by ID
+  /**
+   * Fungsi utilitas untuk mendapatkan nama tim berdasarkan ID
+   * 
+   * @param teamId - ID tim yang dicari
+   * @returns Nama tim atau placeholder jika tidak ditemukan
+   */
   const getTeamName = (teamId: number) => {
     const team = teams.find(t => t.team_id === teamId);
     return team ? team.team_name : `Team #${teamId}`;
@@ -83,7 +95,13 @@ export default function ProjectsList({
   );
 }
 
-// Table header cell component
+/**
+ * Komponen sel header tabel
+ * 
+ * @param children - Konten yang akan ditampilkan di sel header
+ * @param center - Apakah konten harus di tengah
+ * @returns Elemen sel header tabel
+ */
 function Th({
   children,
   center,
@@ -98,7 +116,13 @@ function Th({
   );
 }
 
-// Table data cell component
+/**
+ * Komponen sel data tabel
+ * 
+ * @param children - Konten yang akan ditampilkan di sel data
+ * @param center - Apakah konten harus di tengah
+ * @returns Elemen sel data tabel
+ */
 function Td({
   children,
   center = false,

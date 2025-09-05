@@ -5,18 +5,25 @@ import { listTeamsService } from "@/app/admin/teams/services/teamService";
 import { listProjectsService } from "./services/projectService";
 import ProjectsList from "./components/ProjectsList";
 
-// Main page component for displaying all projects
-// Only accessible to admin users
+/**
+ * Halaman utama untuk manajemen proyek
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * Menampilkan daftar semua proyek dengan opsi untuk menambah proyek baru
+ * 
+ * @returns Komponen ProjectsList dengan data proyek dan tim
+ */
 export default async function ProjectsPage() {
-  // Authentication check
+  // Memeriksa autentikasi pengguna
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
 
+  // Jika tidak ada pengguna yang login, arahkan ke halaman login
   if (!user) redirect("/login");
+  // Jika pengguna bukan admin, arahkan ke halaman utama
   if (user.role !== "ADMIN") redirect("/");
 
-  // Fetch teams and projects data
+  // Mengambil data tim dan proyek
   const teamsRes = await listTeamsService();
   const teams = teamsRes.ok ? teamsRes.data : [];
 

@@ -5,6 +5,14 @@ import Link from "next/link";
 import { KanbanProvider } from "./components/kanban-context";
 import { KanbanBoard } from "./components/kanban-board";
 
+/**
+ * Halaman detail proyek untuk pengguna reguler
+ * Menampilkan informasi proyek dan board Kanban untuk manajemen tugas
+ * Hanya dapat diakses oleh pengguna yang telah login
+ * 
+ * @param params - Parameter URL yang berisi ID proyek
+ * @returns Halaman detail proyek dengan board Kanban
+ */
 export default async function ProjectDetail({
   params,
 }: {
@@ -17,11 +25,12 @@ export default async function ProjectDetail({
   const raw = cookieStore.get("sb_user")?.value;
   const currentUser = raw ? JSON.parse(raw) : null;
 
+  // Memeriksa autentikasi pengguna
   if (!currentUser) {
     redirect("/login");
   }
 
-  // Ambil data project dari database berdasarkan ID
+  // Mengambil data proyek dari database berdasarkan ID
   const sb = supabaseServer();
   
   const { data: project, error } = await sb
@@ -35,6 +44,7 @@ export default async function ProjectDetail({
     .eq('project_id', id)
     .single();
 
+  // Jika terjadi error atau proyek tidak ditemukan, tampilkan pesan error
   if (error || !project) {
     return (
       <main className="p-6 space-y-6">

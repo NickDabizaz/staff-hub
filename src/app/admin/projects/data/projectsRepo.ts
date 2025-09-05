@@ -7,6 +7,11 @@ import { ProjectWithTeams } from "../types/projectTypes";
 // Repository functions for direct database access
 // These functions handle all Supabase interactions for projects
 
+/**
+ * Repository function untuk mengambil daftar semua proyek dari database
+ * 
+ * @returns Daftar proyek atau error jika terjadi kesalahan
+ */
 export async function listProjectsRepo(): Promise<Result<ProjectWithTeams[]>> {
   const sb = supabaseServer();
   
@@ -22,6 +27,12 @@ export async function listProjectsRepo(): Promise<Result<ProjectWithTeams[]>> {
   return ok(data ?? []);
 }
 
+/**
+ * Repository function untuk mengambil detail proyek berdasarkan ID
+ * 
+ * @param projectId - ID proyek yang akan diambil
+ * @returns Data proyek atau error jika terjadi kesalahan
+ */
 export async function getProjectRepo(projectId: number): Promise<Result<ProjectWithTeams>> {
   const sb = supabaseServer();
   
@@ -38,6 +49,12 @@ export async function getProjectRepo(projectId: number): Promise<Result<ProjectW
   return ok(data);
 }
 
+/**
+ * Repository function untuk membuat proyek baru di database
+ * 
+ * @param input - Data proyek baru yang akan dibuat
+ * @returns Hasil operasi pembuatan proyek atau error jika terjadi kesalahan
+ */
 export async function createProjectRepo(input: {
   project_name: string;
   project_description?: string;
@@ -46,7 +63,7 @@ export async function createProjectRepo(input: {
 }): Promise<Result<ProjectWithTeams>> {
   const sb = supabaseServer();
 
-  // 1) Create project
+  // 1) Membuat proyek
   const { data: projectCreated, error: projectErr } = await sb
     .from("projects")
     .insert({
@@ -61,7 +78,7 @@ export async function createProjectRepo(input: {
 
   const project_id = projectCreated.project_id as number;
 
-  // 2) Insert project teams
+  // 2) Menyisipkan tim proyek
   if (input.team_ids.length > 0) {
     const rows = input.team_ids.map((team_id) => ({
       project_id,
@@ -72,7 +89,7 @@ export async function createProjectRepo(input: {
     if (teamErr) return err(teamErr.message);
   }
 
-  // 3) Read back project with teams
+  // 3) Membaca kembali proyek dengan tim
   const { data: projectWithTeams, error: fullErr } = await sb
     .from("projects")
     .select(
@@ -87,6 +104,12 @@ export async function createProjectRepo(input: {
   return ok(projectWithTeams);
 }
 
+/**
+ * Repository function untuk memperbarui proyek yang sudah ada di database
+ * 
+ * @param input - Data proyek yang akan diperbarui
+ * @returns Hasil operasi pembaruan proyek atau error jika terjadi kesalahan
+ */
 export async function updateProjectRepo(input: {
   project_id: number;
   project_name: string;
@@ -96,7 +119,7 @@ export async function updateProjectRepo(input: {
 }): Promise<Result<ProjectWithTeams>> {
   const sb = supabaseServer();
 
-  // 1) Update project
+  // 1) Memperbarui proyek
   const { error: projectErr } = await sb
     .from("projects")
     .update({
@@ -108,7 +131,7 @@ export async function updateProjectRepo(input: {
     
   if (projectErr) return err(projectErr.message);
 
-  // 2) Delete existing project teams
+  // 2) Menghapus tim proyek yang ada
   const { error: deleteErr } = await sb
     .from("project_teams")
     .delete()
@@ -116,7 +139,7 @@ export async function updateProjectRepo(input: {
     
   if (deleteErr) return err(deleteErr.message);
 
-  // 3) Insert new project teams
+  // 3) Menyisipkan tim proyek baru
   if (input.team_ids.length > 0) {
     const rows = input.team_ids.map((team_id) => ({
       project_id: input.project_id,
@@ -127,7 +150,7 @@ export async function updateProjectRepo(input: {
     if (teamErr) return err(teamErr.message);
   }
 
-  // 4) Read back project with teams
+  // 4) Membaca kembali proyek dengan tim
   const { data: projectWithTeams, error: fullErr } = await sb
     .from("projects")
     .select(

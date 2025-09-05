@@ -4,12 +4,20 @@ import React, { createContext, useContext, useReducer, ReactNode } from "react";
 import { Task } from "@/types";
 import { supabaseServer } from "@/lib/supabase-server";
 
+/**
+ * Tipe data untuk state manajemen Kanban
+ * Mendefinisikan struktur state yang digunakan dalam context provider
+ */
 type KanbanState = {
   tasks: Task[];
   loading: boolean;
   error: string | null;
 };
 
+/**
+ * Tipe data untuk aksi yang dapat dilakukan pada state Kanban
+ * Mendefinisikan berbagai aksi yang dapat memodifikasi state
+ */
 type KanbanAction =
   | { type: "SET_TASKS"; payload: Task[] }
   | { type: "ADD_TASK"; payload: Task }
@@ -18,6 +26,10 @@ type KanbanAction =
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "SET_ERROR"; payload: string | null };
 
+/**
+ * Tipe data untuk context Kanban
+ * Mendefinisikan fungsi-fungsi dan state yang tersedia dalam context
+ */
 type KanbanContextType = {
   state: KanbanState;
   dispatch: React.Dispatch<KanbanAction>;
@@ -28,14 +40,28 @@ type KanbanContextType = {
   fetchTasks: (projectId: number) => Promise<void>;
 };
 
+/**
+ * Membuat context Kanban dengan nilai default undefined
+ */
 const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
 
+/**
+ * State awal untuk reducer Kanban
+ */
 const initialState: KanbanState = {
   tasks: [],
   loading: false,
   error: null,
 };
 
+/**
+ * Reducer untuk manajemen state Kanban
+ * Mengelola perubahan state berdasarkan aksi yang diterima
+ * 
+ * @param state - State saat ini
+ * @param action - Aksi yang akan diterapkan
+ * @returns State baru setelah aksi diterapkan
+ */
 function kanbanReducer(state: KanbanState, action: KanbanAction): KanbanState {
   switch (action.type) {
     case "SET_TASKS":
@@ -65,13 +91,25 @@ function kanbanReducer(state: KanbanState, action: KanbanAction): KanbanState {
   }
 }
 
+/**
+ * Provider untuk context Kanban
+ * Menyediakan state dan fungsi-fungsi manajemen tugas ke komponen anak
+ * 
+ * @param children - Komponen anak yang akan menggunakan context
+ * @returns Provider context dengan state dan fungsi-fungsi manajemen tugas
+ */
 export function KanbanProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(kanbanReducer, initialState);
 
+  /**
+   * Mengambil daftar tugas untuk suatu proyek dari database
+   * 
+   * @param projectId - ID proyek yang tugasnya akan diambil
+   */
   const fetchTasks = async (projectId: number) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      // Fetch tasks from database
+      // Mengambil tugas dari database
       const sb = supabaseServer();
       const { data: tasks, error } = await sb
         .from('tasks')
@@ -88,9 +126,15 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Memindahkan tugas ke status baru
+   * 
+   * @param taskId - ID tugas yang akan dipindahkan
+   * @param newStatus - Status baru untuk tugas
+   */
   const moveTask = async (taskId: number, newStatus: Task["task_status"]) => {
     try {
-      // Update task status in database
+      // Memperbarui status tugas di database
       const sb = supabaseServer();
       const { data, error } = await sb
         .from('tasks')
@@ -109,10 +153,15 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Menambahkan tugas baru ke database
+   * 
+   * @param task - Data tugas baru yang akan ditambahkan
+   */
   const addTask = async (task: Omit<Task, "task_id">) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      // If team_id is not provided, fetch the first team associated with this project
+      // Jika team_id tidak disediakan, ambil tim pertama yang terkait dengan proyek ini
       let teamId = task.team_id;
       if (!teamId) {
         const sb = supabaseServer();
@@ -130,7 +179,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
         teamId = projectTeams.team_id;
       }
 
-      // Add task to database with the correct team_id
+      // Menambahkan tugas ke database dengan team_id yang benar
       const sb = supabaseServer();
       const { data, error } = await sb
         .from('tasks')
@@ -151,10 +200,15 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Memperbarui informasi tugas di database
+   * 
+   * @param task - Data tugas yang diperbarui
+   */
   const updateTask = async (task: Task) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      // Update task in database
+      // Memperbarui tugas di database
       const sb = supabaseServer();
       const { data, error } = await sb
         .from('tasks')
@@ -183,10 +237,15 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Menghapus tugas dari database
+   * 
+   * @param taskId - ID tugas yang akan dihapus
+   */
   const deleteTask = async (taskId: number) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      // Delete task from database
+      // Menghapus tugas dari database
       const sb = supabaseServer();
       const { error } = await sb
         .from('tasks')
@@ -220,6 +279,12 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Custom hook untuk menggunakan context Kanban
+ * Memberikan akses ke state dan fungsi-fungsi manajemen tugas
+ * 
+ * @returns Object context Kanban dengan state dan fungsi-fungsi
+ */
 export function useKanban() {
   const context = useContext(KanbanContext);
   if (context === undefined) {

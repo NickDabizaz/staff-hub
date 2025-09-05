@@ -17,10 +17,23 @@ import {
  * Tidak ada query langsung di sini.
  */
 
+/**
+ * Fungsi utilitas untuk mengkonversi nilai ke tipe number
+ * 
+ * @param value - Nilai yang akan dikonversi
+ * @returns Nilai dalam bentuk number, NaN jika gagal
+ */
 function parseNumber(value: FormDataEntryValue | null): number {
   return Number(value ?? NaN);
 }
 
+/**
+ * Action untuk membuat pengguna baru
+ * Memvalidasi data input dan membuat pengguna baru melalui service
+ * 
+ * @param formData - Data form yang berisi informasi pengguna baru
+ * @returns Hasil operasi pembuatan pengguna
+ */
 export async function createUserAction(formData: FormData) {
   const payload = {
     name: String(formData.get("name") || ""),
@@ -40,6 +53,13 @@ export async function createUserAction(formData: FormData) {
   revalidatePath("/admin/users");
 }
 
+/**
+ * Action untuk memperbarui informasi pengguna
+ * Memvalidasi data input dan memperbarui pengguna melalui service
+ * 
+ * @param formData - Data form yang berisi informasi pengguna yang diperbarui
+ * @returns Hasil operasi pembaruan pengguna
+ */
 export async function updateUserAction(formData: FormData) {
   const payload = {
     id: parseNumber(formData.get("id")),
@@ -61,6 +81,13 @@ export async function updateUserAction(formData: FormData) {
   revalidatePath("/admin/users");
 }
 
+/**
+ * Action untuk menghapus pengguna
+ * Memvalidasi data input dan menghapus pengguna melalui service
+ * 
+ * @param formData - Data form yang berisi ID pengguna yang akan dihapus
+ * @returns Hasil operasi penghapusan pengguna
+ */
 export async function deleteUserAction(formData: FormData) {
   const payload = { id: parseNumber(formData.get("id")) };
   const parsed = DeleteUserSchema.safeParse(payload);

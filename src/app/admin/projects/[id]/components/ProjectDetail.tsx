@@ -2,6 +2,14 @@ import Link from "next/link";
 import type { ProjectWithTeams } from "@/app/admin/projects/types/projectTypes";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
 
+/**
+ * Komponen untuk menampilkan detail proyek
+ * Menampilkan informasi lengkap tentang proyek termasuk deskripsi, deadline, dan tim yang menangani
+ * 
+ * @param project - Data proyek yang akan ditampilkan
+ * @param teams - Daftar tim untuk referensi nama tim
+ * @returns Komponen detail proyek dengan informasi lengkap
+ */
 export default function ProjectDetail({ 
   project, 
   teams 
@@ -9,6 +17,12 @@ export default function ProjectDetail({
   project: ProjectWithTeams; 
   teams: TeamWithMembers[]; 
 }) {
+  /**
+   * Fungsi utilitas untuk mendapatkan nama tim berdasarkan ID
+   * 
+   * @param teamId - ID tim yang dicari
+   * @returns Nama tim atau placeholder jika tidak ditemukan
+   */
   const getTeamName = (teamId: number) => {
     const team = teams.find(t => t.team_id === teamId);
     return team ? team.team_name : `Team #${teamId}`;

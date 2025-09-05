@@ -5,27 +5,40 @@ import { getProjectService } from "../services/projectService";
 import { listTeamsService } from "@/app/admin/teams/services/teamService";
 import ProjectDetail from "./components/ProjectDetail";
 
+/**
+ * Halaman detail proyek
+ * Menampilkan informasi lengkap tentang proyek tertentu
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param params - Parameter URL yang berisi ID proyek
+ * @returns Komponen ProjectDetail dengan data proyek dan tim
+ */
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
 
+  // Memeriksa autentikasi pengguna
   if (!user) redirect("/login");
   if (user.role !== "ADMIN") redirect("/");
 
+  // Memvalidasi ID proyek
   const projectId = Number(id);
   if (isNaN(projectId)) {
     redirect("/admin/projects");
   }
 
+  // Mengambil data proyek
   const projectRes = await getProjectService(projectId);
   const project = projectRes.ok ? projectRes.data : null;
 
+  // Jika proyek tidak ditemukan, arahkan kembali ke daftar proyek
   if (!project) {
     redirect("/admin/projects");
   }
 
+  // Mengambil data tim
   const teamsRes = await listTeamsService();
   const teams = teamsRes.ok ? teamsRes.data : [];
 

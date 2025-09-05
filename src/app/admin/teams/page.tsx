@@ -5,18 +5,24 @@ import { listTeamsService } from "./services/teamService";
 import { listUsersService } from "../users/services/userService";
 import TeamsAdmin from "./components/TeamsAdmin";
 
-// Main page for team management
-// Only accessible to admin users
+/**
+ * Halaman utama untuk manajemen tim
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @returns Komponen TeamsAdmin dengan data awal tim dan pengguna
+ */
 export default async function TeamsPage() {
-  // Authentication check
+  // Memeriksa autentikasi pengguna
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
 
+  // Jika tidak ada pengguna yang login, arahkan ke halaman login
   if (!user) redirect("/login");
+  // Jika pengguna bukan admin, arahkan ke halaman utama
   if (user.role !== "ADMIN") redirect("/");
 
-  // Fetch initial data for teams and users
+  // Mengambil data awal untuk tim dan pengguna
   const teamsRes = await listTeamsService();
   const teams = teamsRes.ok ? teamsRes.data : [];
 

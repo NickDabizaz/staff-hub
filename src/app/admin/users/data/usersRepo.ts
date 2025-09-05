@@ -8,6 +8,11 @@ import { UserRow, Result, ok, err } from "../types/userTypes";
  * Repository TIDAK berisi aturan bisnis.
  */
 
+/**
+ * Mengambil daftar semua pengguna dari database
+ * 
+ * @returns Daftar pengguna atau error jika terjadi kesalahan
+ */
 export async function listUsersRepo(): Promise<Result<UserRow[]>> {
   const sb = supabaseServer();
   const { data, error } = await sb
@@ -19,6 +24,12 @@ export async function listUsersRepo(): Promise<Result<UserRow[]>> {
   return ok(data ?? []);
 }
 
+/**
+ * Mencari pengguna berdasarkan alamat email
+ * 
+ * @param email - Alamat email yang akan dicari
+ * @returns Data pengguna atau null jika tidak ditemukan, error jika terjadi kesalahan
+ */
 export async function findUserByEmailRepo(
   email: string
 ): Promise<Result<UserRow | null>> {
@@ -33,6 +44,12 @@ export async function findUserByEmailRepo(
   return ok(data ?? null);
 }
 
+/**
+ * Membuat pengguna baru di database
+ * 
+ * @param input - Data pengguna baru yang akan dibuat
+ * @returns Hasil operasi pembuatan pengguna
+ */
 export async function createUserRepo(input: {
   name: string;
   email: string;
@@ -50,6 +67,12 @@ export async function createUserRepo(input: {
   return ok(null);
 }
 
+/**
+ * Memperbarui informasi pengguna di database
+ * 
+ * @param input - Data pengguna yang akan diperbarui
+ * @returns Hasil operasi pembaruan pengguna
+ */
 export async function updateUserRepo(input: {
   id: number;
   name?: string;
@@ -76,6 +99,12 @@ export async function updateUserRepo(input: {
   return ok(null);
 }
 
+/**
+ * Menghapus pengguna dari database
+ * 
+ * @param id - ID pengguna yang akan dihapus
+ * @returns Hasil operasi penghapusan pengguna
+ */
 export async function deleteUserRepo(id: number): Promise<Result<null>> {
   const sb = supabaseServer();
   const { error } = await sb.from("users").delete().eq("user_id", id);

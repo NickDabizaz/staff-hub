@@ -10,6 +10,14 @@ import type { ProjectWithTeams } from "@/app/admin/projects/types/projectTypes";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
 import { updateProjectAction } from "../../../actions";
 
+/**
+ * Komponen form untuk mengedit proyek yang sudah ada
+ * Menyediakan field untuk memperbarui nama proyek, deskripsi, deadline, dan tim yang menangani
+ * 
+ * @param project - Data proyek yang akan diedit
+ * @param teams - Daftar tim yang tersedia untuk ditugaskan ke proyek
+ * @returns Form edit proyek dengan validasi dan submit handler
+ */
 export default function EditProjectForm({ 
   project,
   teams 
@@ -30,6 +38,13 @@ export default function EditProjectForm({
     project.project_teams.map(pt => pt.team_id)
   );
 
+  /**
+   * Handler untuk perubahan pemilihan tim
+   * Menambahkan atau menghapus tim dari daftar tim yang ditugaskan
+   * 
+   * @param teamId - ID tim yang diubah pemilihannya
+   * @param checked - Status pemilihan tim (dipilih atau tidak)
+   */
   const handleTeamChange = (teamId: number, checked: boolean) => {
     if (checked) {
       setSelectedTeamIds(prev => [...prev, teamId]);
@@ -38,6 +53,12 @@ export default function EditProjectForm({
     }
   };
 
+  /**
+   * Handler untuk submit form edit proyek
+   * Memvalidasi input dan mengirim data ke server untuk diperbarui
+   * 
+   * @param e - Event submit form
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -72,7 +93,7 @@ export default function EditProjectForm({
         showConfirmButton: false,
       });
 
-      // Reset form
+      // Reset form dan kembali ke halaman daftar proyek
       router.push("/admin/projects");
       router.refresh();
     } catch (e) {

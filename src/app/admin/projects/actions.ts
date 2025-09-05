@@ -5,10 +5,23 @@ import { CreateProjectSchema } from "./schemas/projectsSchemas";
 import { createProjectService, updateProjectService } from "./services/projectService";
 import { ProjectWithTeams } from "./types/projectTypes";
 
+/**
+ * Fungsi utilitas untuk mengkonversi nilai ke tipe number
+ * 
+ * @param v - Nilai yang akan dikonversi
+ * @returns Nilai dalam bentuk number, NaN jika gagal
+ */
 function num(v: FormDataEntryValue | null): number {
   return Number(v ?? NaN);
 }
 
+/**
+ * Action untuk membuat proyek baru
+ * Memvalidasi data input dan membuat proyek baru melalui service
+ * 
+ * @param formData - Data form yang berisi informasi proyek baru
+ * @returns Hasil operasi pembuatan proyek
+ */
 export async function createProjectAction(formData: FormData): Promise<ProjectWithTeams> {
   const rawTeams = String(formData.get("team_ids") || "[]");
   let team_ids: number[] = [];
@@ -40,6 +53,13 @@ export async function createProjectAction(formData: FormData): Promise<ProjectWi
   return res.data;
 }
 
+/**
+ * Action untuk memperbarui proyek yang sudah ada
+ * Memvalidasi data input dan memperbarui proyek melalui service
+ * 
+ * @param formData - Data form yang berisi informasi proyek yang diperbarui
+ * @returns Hasil operasi pembaruan proyek
+ */
 export async function updateProjectAction(formData: FormData): Promise<ProjectWithTeams> {
   const projectId = num(formData.get("project_id"));
   if (isNaN(projectId)) throw new Error("ID project tidak valid");
@@ -63,8 +83,8 @@ export async function updateProjectAction(formData: FormData): Promise<ProjectWi
     team_ids,
   };
 
-  // For now, we'll use the same schema as create since the fields are similar
-  // You might want to create a separate UpdateProjectSchema later
+  // Untuk saat ini, kita menggunakan schema yang sama dengan pembuatan karena field-nya mirip
+  // Anda mungkin ingin membuat UpdateProjectSchema terpisah nanti
   const parsed = CreateProjectSchema.safeParse({
     project_name: payload.project_name,
     project_description: payload.project_description,

@@ -4,14 +4,23 @@ import Link from "next/link";
 import { listTeamsService } from "@/app/admin/teams/services/teamService";
 import CreateProjectForm from "../components/CreateProjectForm";
 
+/**
+ * Halaman untuk membuat proyek baru
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * Menyediakan form untuk menambahkan proyek baru dengan tim yang menangani
+ * 
+ * @returns Komponen CreateProjectForm dengan data tim
+ */
 export default async function NewProjectPage() {
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
 
+  // Memeriksa autentikasi pengguna
   if (!user) redirect("/login");
   if (user.role !== "ADMIN") redirect("/");
 
+  // Mengambil data tim
   const teamsRes = await listTeamsService();
   const teams = teamsRes.ok ? teamsRes.data : [];
 

@@ -8,6 +8,12 @@ import {
   TeamMemberRole,
 } from "../types/teamTypes";
 
+/**
+ * Fungsi utilitas untuk memetakan data tim mentah ke struktur yang diharapkan
+ * 
+ * @param raw - Data tim mentah dari database
+ * @returns Data tim yang telah dipetakan ke struktur TeamWithMembers
+ */
 function mapTeamRow(raw: any): TeamWithMembers {
   const members: TeamMemberRow[] = (raw.team_members ?? []).map((m: any) => ({
     team_member_id: m.team_member_id,
@@ -28,6 +34,11 @@ function mapTeamRow(raw: any): TeamWithMembers {
   } as TeamWithMembers;
 }
 
+/**
+ * Repository function untuk mengambil daftar job roles dari database
+ * 
+ * @returns Daftar job roles atau error jika terjadi kesalahan
+ */
 export async function getJobRolesRepo(): Promise<Result<any[]>> {
   const sb = supabaseServer();
   const { data, error } = await sb
@@ -39,6 +50,11 @@ export async function getJobRolesRepo(): Promise<Result<any[]>> {
   return ok(data || []);
 }
 
+/**
+ * Repository function untuk mengambil daftar semua tim dengan anggotanya
+ * 
+ * @returns Daftar tim dengan anggotanya atau error jika terjadi kesalahan
+ */
 export async function listTeamsWithMembersRepo(): Promise<
   Result<TeamWithMembers[]>
 > {
@@ -59,6 +75,12 @@ export async function listTeamsWithMembersRepo(): Promise<
   return ok(mapped);
 }
 
+/**
+ * Repository function untuk membuat tim baru beserta anggotanya
+ * 
+ * @param input - Data tim baru yang akan dibuat
+ * @returns Hasil operasi pembuatan tim atau error jika terjadi kesalahan
+ */
 export async function createTeamWithMembersRepo(input: {
   team_name: string;
   pm_user_id: number;
@@ -66,7 +88,7 @@ export async function createTeamWithMembersRepo(input: {
 }): Promise<Result<TeamWithMembers>> {
   const sb = supabaseServer();
 
-  // 1) Create team
+  // 1) Membuat tim
   const { data: teamCreated, error: teamErr } = await sb
     .from("teams")
     .insert({ team_name: input.team_name })
@@ -76,7 +98,7 @@ export async function createTeamWithMembersRepo(input: {
 
   const team_id = teamCreated.team_id as number;
 
-  // 2) Insert PM member
+  // 2) Menyisipkan anggota PM
   const { error: pmErr } = await sb.from("team_members").insert({
     team_id,
     user_id: input.pm_user_id,
@@ -84,7 +106,7 @@ export async function createTeamWithMembersRepo(input: {
   });
   if (pmErr) return err(pmErr.message);
 
-  // 3) Insert STAFF members (filter duplicates & PM)
+  // 3) Menyisipkan anggota STAFF (filter duplikat & PM)
   const uniqueMembers = Array.from(new Set(input.member_user_ids)).filter(
     (uid) => uid && uid !== input.pm_user_id
   );
@@ -98,7 +120,7 @@ export async function createTeamWithMembersRepo(input: {
     if (memErr) return err(memErr.message);
   }
 
-  // 4) Read back with members
+  // 4) Membaca kembali dengan anggota
   const { data: full, error: fullErr } = await sb
     .from("teams")
     .select(
@@ -115,6 +137,12 @@ export async function createTeamWithMembersRepo(input: {
   return ok(mapTeamRow(full));
 }
 
+/**
+ * Repository function untuk menambahkan anggota ke tim
+ * 
+ * @param input - Data anggota yang akan ditambahkan
+ * @returns Hasil operasi penambahan anggota atau error jika terjadi kesalahan
+ */
 export async function addTeamMemberRepo(input: {
   team_id: number;
   user_id: number;
@@ -123,7 +151,7 @@ export async function addTeamMemberRepo(input: {
   const sb = supabaseServer();
   const role = input.role ?? ("STAFF" as TeamMemberRole);
 
-  // Insert member
+  // Menyisipkan anggota
   const { data: ins, error: insErr } = await sb
     .from("team_members")
     .insert({ team_id: input.team_id, user_id: input.user_id, team_member_role: role })
@@ -131,7 +159,7 @@ export async function addTeamMemberRepo(input: {
     .single();
   if (insErr || !ins) return err(insErr?.message ?? "Gagal tambah member");
 
-  // Fetch user for shaping
+  // Mengambil pengguna untuk shaping
   const { data: user, error: userErr } = await sb
     .from("users")
     .select("user_id,user_name,user_email,user_system_role")
@@ -147,6 +175,12 @@ export async function addTeamMemberRepo(input: {
   });
 }
 
+/**
+ * Repository function untuk menghapus anggota dari tim
+ * 
+ * @param team_member_id - ID anggota tim yang akan dihapus
+ * @returns Hasil operasi penghapusan atau error jika terjadi kesalahan
+ */
 export async function removeTeamMemberRepo(team_member_id: number): Promise<Result<null>> {
   const sb = supabaseServer();
   const { error } = await sb
@@ -157,6 +191,12 @@ export async function removeTeamMemberRepo(team_member_id: number): Promise<Resu
   return ok(null);
 }
 
+/**
+ * Repository function untuk mengambil job roles anggota tim
+ * 
+ * @param team_member_id - ID anggota tim
+ * @returns Daftar job role IDs untuk anggota tim atau error jika terjadi kesalahan
+ */
 export async function getTeamMemberRolesRepo(team_member_id: number): Promise<Result<any[]>> {
   const sb = supabaseServer();
   const { data, error } = await sb
@@ -168,6 +208,13 @@ export async function getTeamMemberRolesRepo(team_member_id: number): Promise<Re
   return ok(data?.map(item => item.job_role_id) || []);
 }
 
+/**
+ * Repository function untuk mengatur job roles anggota tim
+ * 
+ * @param team_member_id - ID anggota tim
+ * @param job_role_ids - Daftar ID job roles yang akan diatur
+ * @returns Hasil operasi pengaturan job roles atau error jika terjadi kesalahan
+ */
 export async function setTeamMemberRolesRepo(team_member_id: number, job_role_ids: number[]): Promise<Result<null>> {
   const sb = supabaseServer();
   
@@ -176,7 +223,7 @@ export async function setTeamMemberRolesRepo(team_member_id: number, job_role_id
     return err("Invalid job role IDs");
   }
   
-  // Hapus semua job role yang ada untuk team member ini
+  // Menghapus semua job role yang ada untuk anggota tim ini
   const { error: deleteError } = await sb
     .from("team_member_roles")
     .delete()
@@ -184,7 +231,7 @@ export async function setTeamMemberRolesRepo(team_member_id: number, job_role_id
   
   if (deleteError) return err(deleteError.message);
   
-  // Tambahkan job role baru jika ada
+  // Menambahkan job role baru jika ada
   if (job_role_ids.length > 0) {
     const rows = job_role_ids.map(job_role_id => ({
       team_member_id,
@@ -201,13 +248,19 @@ export async function setTeamMemberRolesRepo(team_member_id: number, job_role_id
   return ok(null);
 }
 
+/**
+ * Repository function untuk memperbarui Project Manager tim
+ * 
+ * @param input - Data untuk memperbarui PM tim
+ * @returns Hasil operasi pembaruan PM atau error jika terjadi kesalahan
+ */
 export async function updateTeamPMRepo(input: {
   team_id: number;
   pm_user_id: number;
 }): Promise<Result<null>> {
   const sb = supabaseServer();
   
-  // 1. Periksa apakah user yang dipilih memang PM
+  // 1. Memeriksa apakah pengguna yang dipilih memang PM
   const { data: user, error: userErr } = await sb
     .from("users")
     .select("user_system_role")
@@ -217,7 +270,7 @@ export async function updateTeamPMRepo(input: {
   if (userErr) return err(userErr.message);
   if (user?.user_system_role !== "PM") return err("Hanya user dengan role PM yang bisa dijadikan Project Manager");
   
-  // 2. Hapus role PM lama jika ada
+  // 2. Menghapus role PM lama jika ada
   const { error: removeErr } = await sb
     .from("team_members")
     .delete()
@@ -225,7 +278,7 @@ export async function updateTeamPMRepo(input: {
   
   if (removeErr) return err(removeErr.message);
   
-  // 3. Tambahkan PM baru
+  // 3. Menambahkan PM baru
   const { error: addErr } = await sb
     .from("team_members")
     .insert({
@@ -239,12 +292,18 @@ export async function updateTeamPMRepo(input: {
   return ok(null);
 }
 
+/**
+ * Repository function untuk memperbarui anggota tim
+ * 
+ * @param input - Data untuk memperbarui anggota tim
+ * @returns Hasil operasi pembaruan anggota atau error jika terjadi kesalahan
+ */
 export async function updateTeamMembersRepo(input: {
   team_id: number;
   member_user_ids: number[];
 }): Promise<Result<null>> {
   const sb = supabaseServer();
-  // Ambil daftar anggota STAFF saat ini untuk tim ini
+  // Mengambil daftar anggota STAFF saat ini untuk tim ini
   const { data: currentRows, error: currentErr } = await sb
     .from("team_members")
     .select("team_member_id,user_id")
@@ -255,14 +314,14 @@ export async function updateTeamMembersRepo(input: {
   const currentUserIds = new Set((currentRows ?? []).map((r: any) => r.user_id as number));
   const desiredUserIds = Array.from(new Set(input.member_user_ids.filter(Boolean)));
 
-  // Hitung diff: siapa yang harus dihapus dan siapa yang harus ditambahkan
+  // Menghitung diff: siapa yang harus dihapus dan siapa yang harus ditambahkan
   const toDelete = (currentRows ?? [])
     .filter((r: any) => !desiredUserIds.includes(r.user_id))
     .map((r: any) => r.team_member_id as number);
 
   const toAdd = desiredUserIds.filter((uid) => !currentUserIds.has(uid));
 
-  // Hapus hanya anggota yang tidak lagi dipilih
+  // Menghapus hanya anggota yang tidak lagi dipilih
   if (toDelete.length > 0) {
     const { error: removeErr } = await sb
       .from("team_members")
@@ -271,7 +330,7 @@ export async function updateTeamMembersRepo(input: {
     if (removeErr) return err(removeErr.message);
   }
 
-  // Tambahkan hanya anggota baru
+  // Menambahkan hanya anggota baru
   if (toAdd.length > 0) {
     const rows = toAdd.map((user_id) => ({
       team_id: input.team_id,

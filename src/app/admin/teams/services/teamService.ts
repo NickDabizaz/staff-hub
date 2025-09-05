@@ -22,18 +22,35 @@ import {
 } from "../data/teamsRepo";
 
 // Helpers (mirrored from userService)
+/**
+ * Mengambil data pengguna yang sedang login
+ * 
+ * @returns Data pengguna yang sedang login atau null jika tidak ada
+ */
 async function currentUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   return raw ? (JSON.parse(raw) as SessionUser) : null;
 }
 
+/**
+ * Memastikan bahwa pengguna memiliki hak akses admin
+ * 
+ * @param user - Data pengguna yang akan diverifikasi
+ * @returns Hasil verifikasi, error jika bukan admin
+ */
 function ensureAdmin(user: SessionUser | null): Result<null> {
   if (!user || user.role !== "ADMIN") return err("FORBIDDEN");
   return ok(null);
 }
 
 // Services
+/**
+ * Service untuk mengambil daftar semua tim dengan anggotanya
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @returns Daftar tim dengan anggotanya atau error jika tidak memiliki akses
+ */
 export async function listTeamsService(): Promise<Result<TeamWithMembers[]>> {
   const me = await currentUser();
   const auth = ensureAdmin(me);
@@ -42,6 +59,13 @@ export async function listTeamsService(): Promise<Result<TeamWithMembers[]>> {
   return await listTeamsWithMembersRepo();
 }
 
+/**
+ * Service untuk membuat tim baru dengan anggotanya
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param input - Data tim baru yang akan dibuat
+ * @returns Hasil operasi pembuatan tim
+ */
 export async function createTeamService(input: {
   team_name: string;
   pm_user_id: number;
@@ -54,6 +78,13 @@ export async function createTeamService(input: {
   return await createTeamWithMembersRepo(input);
 }
 
+/**
+ * Service untuk menambahkan anggota ke tim
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param input - Data anggota yang akan ditambahkan ke tim
+ * @returns Hasil operasi penambahan anggota
+ */
 export async function addTeamMemberService(input: {
   team_id: number;
   user_id: number;
@@ -66,6 +97,13 @@ export async function addTeamMemberService(input: {
   return await addTeamMemberRepo(input);
 }
 
+/**
+ * Service untuk menghapus anggota dari tim
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param team_member_id - ID anggota tim yang akan dihapus
+ * @returns Hasil operasi penghapusan anggota
+ */
 export async function removeTeamMemberService(
   team_member_id: number
 ): Promise<Result<null>> {
@@ -76,6 +114,13 @@ export async function removeTeamMemberService(
   return await removeTeamMemberRepo(team_member_id);
 }
 
+/**
+ * Service untuk mengambil job roles anggota tim
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param team_member_id - ID anggota tim
+ * @returns Daftar job role IDs untuk anggota tim
+ */
 export async function getTeamMemberRolesService(
   team_member_id: number
 ): Promise<Result<number[]>> {
@@ -89,6 +134,14 @@ export async function getTeamMemberRolesService(
   return ok(result.data);
 }
 
+/**
+ * Service untuk mengatur job roles anggota tim
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param team_member_id - ID anggota tim
+ * @param job_role_ids - Daftar ID job roles yang akan diatur
+ * @returns Hasil operasi pengaturan job roles
+ */
 export async function setTeamMemberRolesService(
   team_member_id: number,
   job_role_ids: number[]
@@ -105,6 +158,13 @@ export async function setTeamMemberRolesService(
   return await setTeamMemberRolesRepo(team_member_id, job_role_ids);
 }
 
+/**
+ * Service untuk memperbarui Project Manager tim
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param input - Data untuk memperbarui PM tim
+ * @returns Hasil operasi pembaruan PM
+ */
 export async function updateTeamPMService(input: {
   team_id: number;
   pm_user_id: number;
@@ -116,6 +176,13 @@ export async function updateTeamPMService(input: {
   return await updateTeamPMRepo(input);
 }
 
+/**
+ * Service untuk memperbarui anggota tim
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @param input - Data untuk memperbarui anggota tim
+ * @returns Hasil operasi pembaruan anggota
+ */
 export async function updateTeamMembersService(input: {
   team_id: number;
   member_user_ids: number[];
@@ -127,6 +194,12 @@ export async function updateTeamMembersService(input: {
   return await updateTeamMembersRepo(input);
 }
 
+/**
+ * Service untuk mengambil daftar job roles
+ * Hanya dapat diakses oleh pengguna dengan role ADMIN
+ * 
+ * @returns Daftar job roles
+ */
 export async function getJobRolesService(): Promise<Result<any[]>> {
   const me = await currentUser();
   const auth = ensureAdmin(me);

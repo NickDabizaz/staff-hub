@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+/**
+ * Schema validasi untuk membuat proyek baru
+ * Memastikan data yang diterima sesuai dengan format yang diharapkan
+ */
 export const CreateProjectSchema = z.object({
   project_name: z.string().min(1, "Nama project wajib diisi"),
   project_description: z.string().optional(),

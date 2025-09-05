@@ -9,6 +9,13 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
 
+/**
+ * Komponen form untuk membuat proyek baru
+ * Menyediakan field untuk nama proyek, deskripsi, deadline, dan pemilihan tim
+ * 
+ * @param teams - Daftar tim yang tersedia untuk ditugaskan ke proyek
+ * @returns Form pembuatan proyek dengan validasi dan submit handler
+ */
 export default function CreateProjectForm({ teams }: { teams: TeamWithMembers[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -19,6 +26,13 @@ export default function CreateProjectForm({ teams }: { teams: TeamWithMembers[] 
   const [deadline, setDeadline] = useState<Date>();
   const [selectedTeamIds, setSelectedTeamIds] = useState<number[]>([]);
 
+  /**
+   * Handler untuk perubahan pemilihan tim
+   * Menambahkan atau menghapus tim dari daftar tim yang ditugaskan
+   * 
+   * @param teamId - ID tim yang diubah pemilihannya
+   * @param checked - Status pemilihan tim (dipilih atau tidak)
+   */
   const handleTeamChange = (teamId: number, checked: boolean) => {
     if (checked) {
       setSelectedTeamIds(prev => [...prev, teamId]);
@@ -27,6 +41,12 @@ export default function CreateProjectForm({ teams }: { teams: TeamWithMembers[] 
     }
   };
 
+  /**
+   * Handler untuk submit form pembuatan proyek
+   * Memvalidasi input dan mengirim data ke server
+   * 
+   * @param e - Event submit form
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -66,7 +86,7 @@ export default function CreateProjectForm({ teams }: { teams: TeamWithMembers[] 
       setDeadline(undefined);
       setSelectedTeamIds([]);
       
-      // Refresh page to show new project
+      // Menyegarkan halaman untuk menampilkan proyek baru
       router.refresh();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Terjadi kesalahan";

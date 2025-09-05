@@ -8,6 +8,10 @@ import { QuickAddTask } from "./quick-add-task";
 import { useKanban } from "./kanban-context";
 import { TaskFilters } from "./task-filters";
 
+/**
+ * Konfigurasi kolom status untuk board Kanban
+ * Mendefinisikan struktur dan warna untuk setiap kolom status
+ */
 const statusColumns: { id: Task["task_status"]; title: string; color: string }[] = [
   { id: "TODO", title: "To Do", color: "bg-gray-500" },
   { id: "IN_PROGRESS", title: "In Progress", color: "bg-blue-500" },
@@ -15,6 +19,14 @@ const statusColumns: { id: Task["task_status"]; title: string; color: string }[]
   { id: "BLOCKED", title: "Blocked", color: "bg-red-500" },
 ];
 
+/**
+ * Komponen board Kanban untuk manajemen tugas proyek
+ * Menampilkan tugas dalam format kolom berdasarkan status dengan kemampuan drag-and-drop
+ * 
+ * @param projectId - ID proyek yang ditampilkan
+ * @param currentUser - Data pengguna yang sedang login
+ * @returns Board Kanban interaktif dengan tugas-tugas proyek
+ */
 export function KanbanBoard({ projectId, currentUser }: { projectId: number; currentUser: any }) {
   const { state, moveTask, fetchTasks } = useKanban();
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -24,15 +36,22 @@ export function KanbanBoard({ projectId, currentUser }: { projectId: number; cur
     priority: "ALL" as Task["task_priority"] | "ALL",
   });
 
+  // Mengambil tugas ketika projectId berubah
   useEffect(() => {
     fetchTasks(projectId);
   }, [projectId]);
 
+  /**
+   * Handler untuk perubahan filter
+   * Memperbarui state filter berdasarkan input pengguna
+   * 
+   * @param newFilters - Filter baru yang diterapkan
+   */
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
   };
 
-  // Filter tasks based on search, status, and priority
+  // Memfilter tugas berdasarkan search, status, dan priority
   const filteredTasks = state.tasks.filter(task => {
     const matchesSearch = task.task_title.toLowerCase().includes(filters.search.toLowerCase()) || 
                           (task.task_description && task.task_description.toLowerCase().includes(filters.search.toLowerCase()));
@@ -42,28 +61,52 @@ export function KanbanBoard({ projectId, currentUser }: { projectId: number; cur
     return task.project_id === projectId && matchesSearch && matchesStatus && matchesPriority;
   });
 
+  /**
+   * Mengelompokkan tugas berdasarkan status untuk ditampilkan di kolom yang sesuai
+   */
   const tasksByStatus = statusColumns.map((column) => ({
     ...column,
     tasks: filteredTasks.filter(task => task.task_status === column.id),
   }));
 
+  /**
+   * Handler untuk event drag start
+   * Menyimpan ID tugas yang sedang di-drag ke data transfer
+   * 
+   * @param e - Event drag start
+   * @param taskId - ID tugas yang di-drag
+   */
   const handleDragStart = (e: React.DragEvent, taskId: number) => {
     e.dataTransfer.setData("taskId", taskId.toString());
   };
 
+  /**
+   * Handler untuk event drag over
+   * Mencegah perilaku default untuk memungkinkan drop
+   * 
+   * @param e - Event drag over
+   */
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
 
+  /**
+   * Handler untuk event drop
+   * Memindahkan tugas ke kolom status baru
+   * 
+   * @param e - Event drop
+   * @param newStatus - Status baru untuk tugas
+   */
   const handleDrop = (e: React.DragEvent, newStatus: Task["task_status"]) => {
     e.preventDefault();
     const taskId = parseInt(e.dataTransfer.getData("taskId"));
     moveTask(taskId, newStatus);
   };
 
-  // Check if user can add tasks (PM or ADMIN)
+  // Memeriksa apakah pengguna dapat menambahkan tugas (PM atau ADMIN)
   const canAddTasks = currentUser?.role === "PM" || currentUser?.role === "ADMIN";
 
+  // Menampilkan indikator loading atau pesan error jika diperlukan
   if (state.loading) {
     return <div>Loading tasks...</div>;
   }
