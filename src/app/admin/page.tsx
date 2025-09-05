@@ -32,6 +32,11 @@ export default async function AdminDashboard() {
       title: "Projects",
       subtitle: "Kelola project dan tim yang mengerjakan project.",
     },
+    {
+      href: "/admin/settings",
+      title: "Settings",
+      subtitle: "Kelola job roles dan preferensi dasar.",
+    },
   ];
 
   return (

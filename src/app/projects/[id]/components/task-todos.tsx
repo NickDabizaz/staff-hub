@@ -37,13 +37,18 @@ const statusColors: Record<string, string> = {
   DONE: "bg-green-500",
 };
 
-export function TaskTodos({ taskId }: { taskId: number }) {
+export function TaskTodos({ taskId, currentUser }: { taskId: number; currentUser: any; }) {
   const [todos, setTodos] = useState<TaskTodo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [currentTodo, setCurrentTodo] = useState<TaskTodo | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Check if user can interact with todos (assigned user, PM, or ADMIN)
+  const canInteractWithTodos = currentUser?.role === "PM" || 
+                              currentUser?.role === "ADMIN" ||
+                              todos.some(todo => todo.assignee_user_id === currentUser?.id);
 
   // Fetch todos for the task
   useEffect(() => {
@@ -220,10 +225,12 @@ export function TaskTodos({ taskId }: { taskId: number }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Checklist</h3>
+        {canInteractWithTodos && (
         <Button onClick={handleAdd} size="sm">
           <Plus className="w-4 h-4 mr-2" />
           Tambah Todo
         </Button>
+      )}
       </div>
 
       {todos.length === 0 ? (
@@ -232,6 +239,7 @@ export function TaskTodos({ taskId }: { taskId: number }) {
         <div className="space-y-2">
           {todos.map((todo) => (
             <div key={todo.task_todo_id} className="flex items-center gap-2 p-3 border rounded-lg">
+              {canInteractWithTodos ? (
               <Checkbox
                 checked={todo.task_todo_status === "DONE"}
                 onCheckedChange={(checked: boolean) => 
@@ -241,26 +249,39 @@ export function TaskTodos({ taskId }: { taskId: number }) {
                   )
                 }
               />
+            ) : (
+              <div className="w-4 h-4 rounded border flex items-center justify-center">
+                {todo.task_todo_status === "DONE" && (
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+            )}
               <span className={`flex-1 ${todo.task_todo_status === "DONE" ? "line-through text-gray-500" : ""}`}>
                 {todo.task_todo_title}
               </span>
               <div className={`w-3 h-3 rounded-full ${
                 statusColors[todo.task_todo_status] || "bg-gray-500"
               }`}></div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => handleEdit(todo)}
-              >
-                <Pencil className="w-4 h-4" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => handleDelete(todo.task_todo_id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              {canInteractWithTodos && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleEdit(todo)}
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleDelete(todo.task_todo_id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
+            )}
             </div>
           ))}
         </div>
@@ -304,6 +325,19 @@ export function TaskTodos({ taskId }: { taskId: number }) {
                     <SelectItem value="DONE">Done</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              <div>
+                <Label>Evidence/Bukti</Label>
+                <Input
+                  type="text"
+                  value={currentTodo.task_todo_evidence || ""}
+                  onChange={(e) => setCurrentTodo({
+                    ...currentTodo,
+                    task_todo_evidence: e.target.value || null
+                  })}
+                  placeholder="Link evidence atau bukti"
+                />
               </div>
               
               <div className="flex justify-end gap-2">

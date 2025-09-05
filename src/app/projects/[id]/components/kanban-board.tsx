@@ -119,6 +119,7 @@ export function KanbanBoard({ projectId, currentUser }: { projectId: number; cur
                   key={task.task_id} 
                   task={task} 
                   onDragStart={handleDragStart}
+                  currentUser={currentUser}
                 />
               ))}
               

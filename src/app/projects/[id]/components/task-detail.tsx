@@ -1,11 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Task } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskTodos } from "./task-todos";
+import { useKanban } from "./kanban-context";
+
+interface TaskDetailProps {
+  task: Task;
+}
 
 const priorityColors = {
   LOW: "bg-green-500",
@@ -21,31 +26,48 @@ const statusColors = {
   BLOCKED: "bg-red-500",
 };
 
-export function TaskDetail({ task }: { task: Task }) {
+export function TaskDetail({ task }: TaskDetailProps) {
+  const { updateTask } = useKanban();
+  const [currentTask, setCurrentTask] = useState<Task>(task);
+  
+  useEffect(() => {
+    setCurrentTask(task);
+  }, [task]);
+  
+  const handleMarkAsComplete = async () => {
+    try {
+      const updatedTask = { ...currentTask, task_status: "DONE" as const };
+      await updateTask(updatedTask);
+      setCurrentTask(updatedTask);
+    } catch (error) {
+      console.error("Failed to mark task as complete:", error);
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold">{task.task_title}</h2>
+          <h2 className="text-2xl font-bold">{currentTask.task_title}</h2>
           <div className="flex gap-2 mt-2">
-            <Badge className={`${statusColors[task.task_status]} text-white`}>
-              {task.task_status.replace("_", " ")}
+            <Badge className={`${statusColors[currentTask.task_status]} text-white`}>
+              {currentTask.task_status.replace("_", " ")}
             </Badge>
-            <Badge className={`${priorityColors[task.task_priority]} text-white`}>
-              {task.task_priority}
+            <Badge className={`${priorityColors[currentTask.task_priority]} text-white`}>
+              {currentTask.task_priority}
             </Badge>
           </div>
         </div>
-        <Button>Tandai Selesai</Button>
+        <Button onClick={handleMarkAsComplete}>Tandai Selesai</Button>
       </div>
 
-      {task.task_description && (
+      {currentTask.task_description && (
         <Card>
           <CardHeader>
             <CardTitle>Deskripsi</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-300">{task.task_description}</p>
+            <p className="text-gray-300">{currentTask.task_description}</p>
           </CardContent>
         </Card>
       )}
@@ -56,7 +78,7 @@ export function TaskDetail({ task }: { task: Task }) {
           <CardTitle>Checklist</CardTitle>
         </CardHeader>
         <CardContent>
-          <TaskTodos taskId={task.task_id} />
+          <TaskTodos taskId={currentTask.task_id} currentUser={currentUser} />
         </CardContent>
       </Card>
 
@@ -72,19 +94,19 @@ export function TaskDetail({ task }: { task: Task }) {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Assignee</span>
-              <span>User {task.assignee_user_id || "Belum diassign"}</span>
+              <span>User {currentTask.assignee_user_id || "Belum diassign"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Tanggal Selesai</span>
               <span>
-                {task.task_due_date 
-                  ? new Date(task.task_due_date).toLocaleDateString("id-ID") 
+                {currentTask.task_due_date 
+                  ? new Date(currentTask.task_due_date).toLocaleDateString("id-ID") 
                   : "Tidak ada tenggat waktu"}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Progress</span>
-              <span>{task.task_progress}%</span>
+              <span>{currentTask.task_progress}%</span>
             </div>
           </CardContent>
         </Card>

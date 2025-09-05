@@ -32,14 +32,21 @@ const priorityColors = {
 
 export function TaskCard({ 
   task, 
-  onDragStart 
+  onDragStart,
+  currentUser
 }: { 
   task: Task; 
   onDragStart: (e: React.DragEvent, taskId: number) => void;
+  currentUser: any;
 }) {
   const [showDetails, setShowDetails] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const { deleteTask, updateTask } = useKanban();
+  
+  // Check if user can interact with task (assigned user, PM, or ADMIN)
+  const canInteractWithTask = task.assignee_user_id === currentUser?.id || 
+                             currentUser?.role === "PM" || 
+                             currentUser?.role === "ADMIN";
 
   const handleDelete = async () => {
     const result = await Swal.fire({
@@ -84,9 +91,9 @@ export function TaskCard({
   return (
     <>
       <Card 
-        className="cursor-move hover:shadow-md transition-shadow"
-        draggable
-        onDragStart={(e) => onDragStart(e, task.task_id)}
+        className={`hover:shadow-md transition-shadow ${canInteractWithTask ? 'cursor-move' : 'cursor-not-allowed opacity-75'}`}
+        draggable={canInteractWithTask}
+        onDragStart={(e) => canInteractWithTask && onDragStart(e, task.task_id)}
       >
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
@@ -138,23 +145,25 @@ export function TaskCard({
                   </div>
                 </DialogContent>
               </Dialog>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setShowEditModal(true)}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    <span>Edit</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDelete}>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {canInteractWithTask && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowEditModal(true)}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      <span>Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDelete}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         </CardHeader>
