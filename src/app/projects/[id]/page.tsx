@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import Link from "next/link";
+import { KanbanProvider } from "./kanban-context";
+import { KanbanBoard } from "./kanban-board";
 
 export default async function ProjectDetail({
   params,
@@ -58,51 +60,47 @@ export default async function ProjectDetail({
     );
   }
 
-  // Untuk sekarang kita akan menampilkan data project dasar
-  // Nanti akan dikembangkan untuk menampilkan task-task dalam project
-
   return (
-    <main className="p-6 space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <Link href="/" className="text-sm text-blue-400 hover:underline">
-            ← Kembali ke Dashboard
-          </Link>
-          <h1 className="text-2xl font-semibold mt-2">{project.project_name}</h1>
-        </div>
-        <nav className="space-x-3 text-sm">
-          <a href="/logout" className="underline">
-            Logout
-          </a>
-        </nav>
-      </header>
-
-      <section className="border border-white/10 rounded-2xl p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+    <KanbanProvider>
+      <main className="p-6 space-y-6">
+        <header className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold">{project.project_name}</h2>
-            <p className="mt-2 text-white/60">{project.project_description || 'Tidak ada deskripsi'}</p>
+            <Link href="/" className="text-sm text-blue-400 hover:underline">
+              ← Kembali ke Dashboard
+            </Link>
+            <h1 className="text-2xl font-semibold mt-2">{project.project_name}</h1>
           </div>
-          <span className="inline-flex items-center rounded-full bg-blue-400/10 px-3 py-1 text-xs font-medium text-blue-400">
-            Active
-          </span>
-        </div>
+          <nav className="space-x-3 text-sm">
+            <a href="/logout" className="underline">
+              Logout
+            </a>
+          </nav>
+        </header>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h3 className="text-sm font-medium text-white/60">Tanggal Deadline</h3>
-            <p className="mt-1">{project.project_deadline || 'Tidak ditentukan'}</p>
+        <section className="border border-white/10 rounded-2xl p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold">{project.project_name}</h2>
+              <p className="mt-2 text-white/60">{project.project_description || 'Tidak ada deskripsi'}</p>
+            </div>
+            <span className="inline-flex items-center rounded-full bg-blue-400/10 px-3 py-1 text-xs font-medium text-blue-400">
+              Active
+            </span>
           </div>
-        </div>
-      </section>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Daftar Tugas</h2>
-        <div className="text-center py-12 border border-white/10 rounded-2xl">
-          <h3 className="text-lg font-medium text-white/80">Fitur dalam pengembangan</h3>
-          <p className="mt-2 text-white/60">Daftar tugas untuk project ini akan segera tersedia.</p>
-        </div>
-      </section>
-    </main>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-white/60">Tanggal Deadline</h3>
+              <p className="mt-1">{project.project_deadline || 'Tidak ditentukan'}</p>
+            </div>
+          </div>
+        </section>
+
+        <KanbanBoard 
+          projectId={project.project_id} 
+          currentUser={currentUser} 
+        />
+      </main>
+    </KanbanProvider>
   );
 }
