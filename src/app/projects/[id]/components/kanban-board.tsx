@@ -76,16 +76,14 @@ export function KanbanBoard({ projectId, currentUser }: { projectId: number; cur
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Project Tasks</h2>
-        <Button onClick={() => {
-          console.log("Current user role:", currentUser?.role);
-          if (canAddTasks) {
+        {canAddTasks && (
+          <Button onClick={() => {
+            console.log("Current user role:", currentUser?.role);
             setShowQuickAdd(true);
-          } else {
-            alert(`Anda login sebagai ${currentUser?.role || 'Unknown'}. Hanya Project Manager atau Admin yang dapat menambah task.`);
-          }
-        }}>
-          Add Task
-        </Button>
+          }}>
+            Add Task
+          </Button>
+        )}
       </div>
 
       <TaskFilters onFilterChange={handleFilterChange} />
