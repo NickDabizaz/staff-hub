@@ -28,7 +28,7 @@ import {
   editTaskTodoAction,
   deleteTaskTodoAction,
   updateTaskTodoStatusAction
-} from "./task-todos/actions";
+} from "../task-todos/actions/actions";
 import Swal from "sweetalert2";
 
 const statusColors: Record<string, string> = {

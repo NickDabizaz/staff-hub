@@ -2,8 +2,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import Link from "next/link";
-import { KanbanProvider } from "./kanban-context";
-import { KanbanBoard } from "./kanban-board";
+import { KanbanProvider } from "./components/kanban-context";
+import { KanbanBoard } from "./components/kanban-board";
 
 export default async function ProjectDetail({
   params,

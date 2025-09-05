@@ -1,0 +1,40 @@
+Aslinya kan begini bukannya kalua sesuai aturan toh untuk yang tidak ada fiturnya juga itu pada dasacrnya component dan juga ada fungsionalitasnya tologn dipisa juga menjadi folder folder. 
+- - projects
+- - - [id]
+- - - - edit-task-modal.tsx
+- - - - kanban-board.tsx
+- - - - kanban-context.tsx
+- - - - page.tsx
+- - - - quick-add-task.tsx
+- - - - task-card.tsx
+- - - - task-detail.tsx
+- - - - task-filters.tsx
+- - - - task-todos
+- - - - - actions.ts
+- - - - - data
+- - - - - - taskTodosRepo.ts
+- - - - - services
+- - - - - - taskTodosService.ts
+- - - - - types
+- - - - task-todos.tsx
+
+Misalnya menjadi seperti ini :
+- - projects
+- - - [id]
+- - - - components
+- - - - - edit-task-modal.tsx
+- - - - - kanban-board.tsx
+- - - - - kanban-context.tsx
+- - - - - quick-add-task.tsx
+- - - - - task-card.tsx
+- - - - - task-detail.tsx
+- - - - - task-filters.tsx
+- - - - - task-todos
+- - - - - actions.ts
+- - - - page.tsx
+- - - - - data
+- - - - - - taskTodosRepo.ts
+- - - - - services
+- - - - - - taskTodosService.ts
+- - - - - types
+- - - - task-todos.tsx

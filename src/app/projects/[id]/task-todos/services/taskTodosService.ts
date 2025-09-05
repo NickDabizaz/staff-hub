@@ -7,7 +7,7 @@ import {
   editTaskTodoRepo, 
   deleteTaskTodoRepo,
   updateTaskTodoStatusRepo
-} from "./data/taskTodosRepo";
+} from "../data/taskTodosRepo";
 import { TaskTodo } from "@/types";
 import { Result, ok, err } from "@/lib/result";
 

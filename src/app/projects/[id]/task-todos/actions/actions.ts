@@ -7,7 +7,7 @@ import {
   editTaskTodoService, 
   deleteTaskTodoService,
   updateTaskTodoStatusService
-} from "./services/taskTodosService";
+} from "../services/taskTodosService";
 import { TaskTodo } from "@/types";
 
 function parseNumber(value: FormDataEntryValue | null): number {
