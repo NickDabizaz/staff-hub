@@ -112,11 +112,32 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   const addTask = async (task: Omit<Task, "task_id">) => {
     dispatch({ type: "SET_LOADING", payload: true });
     try {
-      // Add task to database
+      // If team_id is not provided, fetch the first team associated with this project
+      let teamId = task.team_id;
+      if (!teamId) {
+        const sb = supabaseServer();
+        const { data: projectTeams, error: teamError } = await sb
+          .from('project_teams')
+          .select('team_id')
+          .eq('project_id', task.project_id)
+          .limit(1)
+          .single();
+
+        if (teamError) {
+          throw new Error("Gagal mendapatkan team untuk project: " + teamError.message);
+        }
+
+        teamId = projectTeams.team_id;
+      }
+
+      // Add task to database with the correct team_id
       const sb = supabaseServer();
       const { data, error } = await sb
         .from('tasks')
-        .insert(task)
+        .insert({
+          ...task,
+          team_id: teamId
+        })
         .select()
         .single();
 

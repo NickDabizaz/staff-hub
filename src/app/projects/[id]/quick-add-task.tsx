@@ -46,7 +46,9 @@ export function QuickAddTask({
     try {
       await addTask({
         project_id: projectId,
-        team_id: 1, // Default team ID, in real app this would be dynamic
+        // We'll set team_id to null and let the backend determine the appropriate team
+        // or we can fetch the first team associated with this project
+        team_id: null, // Will be set by backend or we'll fetch it
         assignee_user_id: null,
         task_title: title,
         task_description: description,
