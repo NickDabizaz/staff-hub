@@ -162,51 +162,46 @@ const TeamDetailModal = ({
     try {
       console.log('Setting job roles for user:', userId, 'roles:', jobRoleIds);
       
-      // Temukan team_member_id untuk user ini
+      // Temukan team_member_id untuk user ini (dari prop team yang mungkin stale)
       let teamMember = team.members.find(m => m.user.user_id === userId);
-      
-      // Jika tidak ditemukan dalam team.members, mungkin user baru yang belum disimpan
-      // Kita perlu mencari di selectedMemberIds
-      if (!teamMember && selectedMemberIds.includes(userId)) {
-        // Buat objek sementara untuk user baru
-        teamMember = {
-          team_member_id: 0, // Akan diisi setelah disimpan
-          team_id: team.team_id,
-          team_member_role: "STAFF",
-          user: users.find(u => u.user_id === userId) || {
-            user_id: userId,
-            user_name: "",
-            user_email: "",
-            user_system_role: "STAFF"
-          }
-        };
-      }
-      
-      if (!teamMember) {
-        console.warn('User not found in team members or selected members');
-        return;
-      }
 
       // Import supabase client dynamically
       const { supabaseServer } = await import('@/lib/supabase-server');
       const sb = supabaseServer();
       
-      // Jika ini user baru (team_member_id = 0), kita perlu menyimpan user dulu
-      let actualTeamMemberId = teamMember.team_member_id;
+      // Pastikan kita punya team_member_id yang valid:
+      // 1) jika ada di prop team -> pakai itu
+      // 2) jika tidak ada, cek ke DB apakah sudah jadi member
+      // 3) jika belum ada juga, barulah insert
+      let actualTeamMemberId = teamMember?.team_member_id ?? 0;
+
+      if (actualTeamMemberId === 0) {
+        // Cek ke DB apakah sudah ada baris team_members untuk (team_id,user_id)
+        const { data: existingMember, error: existingErr } = await sb
+          .from('team_members')
+          .select('team_member_id')
+          .eq('team_id', team.team_id)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!existingErr && existingMember?.team_member_id) {
+          actualTeamMemberId = existingMember.team_member_id;
+          console.log('Found existing team member ID:', actualTeamMemberId);
+        }
+      }
+
       if (actualTeamMemberId === 0) {
         console.log('Adding new team member for user:', userId);
-        
-        // Tambahkan user ke team dulu
         const { data: newMember, error: addError } = await sb
-          .from("team_members")
+          .from('team_members')
           .insert({
             team_id: team.team_id,
             user_id: userId,
-            team_member_role: "STAFF"
+            team_member_role: 'STAFF'
           })
-          .select()
+          .select('team_member_id')
           .single();
-          
+
         if (addError) throw new Error(addError.message);
         actualTeamMemberId = newMember.team_member_id;
         console.log('New team member created with ID:', actualTeamMemberId);
