@@ -5,6 +5,7 @@ import { Task } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TaskTodos } from "./task-todos";
 
 const priorityColors = {
   LOW: "bg-green-500",
@@ -35,13 +36,13 @@ export function TaskDetail({ task }: { task: Task }) {
             </Badge>
           </div>
         </div>
-        <Button>Mark as Done</Button>
+        <Button>Tandai Selesai</Button>
       </div>
 
       {task.task_description && (
         <Card>
           <CardHeader>
-            <CardTitle>Description</CardTitle>
+            <CardTitle>Deskripsi</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-300">{task.task_description}</p>
@@ -49,26 +50,36 @@ export function TaskDetail({ task }: { task: Task }) {
         </Card>
       )}
 
+      {/* Task Todos Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Checklist</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TaskTodos taskId={task.task_id} />
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Details</CardTitle>
+            <CardTitle>Detail</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-400">Project</span>
-              <span>Project Name</span>
+              <span className="text-gray-400">Proyek</span>
+              <span>Nama Proyek</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Assignee</span>
-              <span>User {task.assignee_user_id || "Unassigned"}</span>
+              <span>User {task.assignee_user_id || "Belum diassign"}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Due Date</span>
+              <span className="text-gray-400">Tanggal Selesai</span>
               <span>
                 {task.task_due_date 
-                  ? new Date(task.task_due_date).toLocaleDateString() 
-                  : "No due date"}
+                  ? new Date(task.task_due_date).toLocaleDateString("id-ID") 
+                  : "Tidak ada tenggat waktu"}
               </span>
             </div>
             <div className="flex justify-between">
@@ -80,17 +91,17 @@ export function TaskDetail({ task }: { task: Task }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Actions</CardTitle>
+            <CardTitle>Aksi</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button className="w-full" variant="outline">
               Edit Task
             </Button>
             <Button className="w-full" variant="outline">
-              Add Comment
+              Tambah Komentar
             </Button>
             <Button className="w-full" variant="outline">
-              Attach File
+              Lampirkan File
             </Button>
           </CardContent>
         </Card>
