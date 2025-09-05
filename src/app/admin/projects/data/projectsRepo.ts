@@ -4,6 +4,9 @@ import { supabaseServer } from "@/lib/supabase-server";
 import { Result, ok, err } from "@/lib/result";
 import { ProjectWithTeams } from "../types/projectTypes";
 
+// Repository functions for direct database access
+// These functions handle all Supabase interactions for projects
+
 export async function listProjectsRepo(): Promise<Result<ProjectWithTeams[]>> {
   const sb = supabaseServer();
   

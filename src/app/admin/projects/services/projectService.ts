@@ -6,19 +6,22 @@ import { SessionUser } from "@/app/admin/users/types/userTypes";
 import { listProjectsRepo, getProjectRepo, createProjectRepo, updateProjectRepo } from "../data/projectsRepo";
 import { ProjectWithTeams } from "../types/projectTypes";
 
-// Helpers (mirrored from userService)
+// Helper functions for authentication and authorization
 async function currentUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   return raw ? (JSON.parse(raw) as SessionUser) : null;
 }
 
+// Ensure only admin users can access project services
 function ensureAdmin(user: SessionUser | null): Result<null> {
   if (!user || user.role !== "ADMIN") return err("FORBIDDEN");
   return ok(null);
 }
 
-// Services
+// Services for project management
+// All services include authentication checks
+
 export async function listProjectsService(): Promise<Result<ProjectWithTeams[]>> {
   const me = await currentUser();
   const auth = ensureAdmin(me);

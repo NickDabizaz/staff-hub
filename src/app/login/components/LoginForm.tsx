@@ -2,7 +2,17 @@
 
 import { loginAction } from "../actions";
 
+/**
+ * Komponen form login yang menangani input pengguna dan mengirimkan data ke server
+ * Form ini memiliki field untuk email dan password dengan validasi dasar
+ */
 export default function LoginForm() { 
+  /**
+   * Fungsi untuk menangani pengiriman form login
+   * Mengekstrak data dari form dan mengirimkannya ke action login
+   * 
+   * @param e - Event pengiriman form
+   */
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -38,9 +48,9 @@ export default function LoginForm() {
         />
       </div>
 
-  {/* Error akan ditampilkan via cookie sb_login_error jika diperlukan */}
+      {/* Error akan ditampilkan via cookie sb_login_error jika diperlukan */}
 
-  <button type="submit" className="w-full rounded bg-black text-white py-2">Masuk</button>
+      <button type="submit" className="w-full rounded bg-black text-white py-2">Masuk</button>
     </form>
   );
 }

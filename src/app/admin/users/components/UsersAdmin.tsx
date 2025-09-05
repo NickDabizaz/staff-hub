@@ -25,6 +25,10 @@ import {
   Shield,
 } from "lucide-react";
 
+/**
+ * Interface untuk definisi state form pengguna
+ * Mendefinisikan struktur data yang digunakan dalam form tambah/edit pengguna
+ */
 type FormState = {
   name: string;
   email: string;
@@ -32,6 +36,10 @@ type FormState = {
   role: Role;
 };
 
+/**
+ * State awal untuk form kosong
+ * Digunakan sebagai nilai default saat membuat form baru
+ */
 const emptyForm: FormState = {
   name: "",
   email: "",
@@ -39,6 +47,13 @@ const emptyForm: FormState = {
   role: "STAFF",
 };
 
+/**
+ * Komponen utama untuk antarmuka administrasi pengguna
+ * Menyediakan fitur untuk menambah, mengedit, mencari, dan mengelola pengguna
+ * 
+ * @param initialUsers - Data pengguna awal yang diteruskan dari server
+ * @returns Antarmuka pengelolaan pengguna dengan berbagai fitur
+ */
 export default function UsersAdmin({
   initialUsers,
 }: {
@@ -46,30 +61,43 @@ export default function UsersAdmin({
 }) {
   const router = useRouter();
 
-  // UI state
+  // Manajemen state UI
   const [users, setUsers] = useState<UserRow[]>(initialUsers);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // filters
+  // State untuk pencarian dan filter
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"" | Role>("");
 
-  // form
+  // State form untuk menambah/mengedit pengguna
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
 
+  // Memperbarui daftar pengguna ketika props berubah
   useEffect(() => {
     setUsers(initialUsers);
   }, [initialUsers]);
 
+  /**
+   * Menghandle perubahan nilai field pada form
+   * 
+   * @param key - Nama field yang berubah
+   * @param val - Nilai baru untuk field tersebut
+   */
   function onFormChange<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm((s) => ({ ...s, [key]: val }));
   }
 
+  /**
+   * Memulai proses edit pengguna
+   * Mengisi form dengan data pengguna yang akan diedit
+   * 
+   * @param u - Data pengguna yang akan diedit
+   */
   function startEdit(u: UserRow) {
     setEditingUser(u);
-    // Hapus domain staffhub.com jika ada saat mengedit
+    // Menghapus domain staffhub.com jika ada saat mengedit
     const emailWithoutDomain = u.user_email.endsWith('@staffhub.com') 
       ? u.user_email.replace('@staffhub.com', '') 
       : u.user_email;
@@ -82,11 +110,15 @@ export default function UsersAdmin({
     });
   }
 
+  /**
+   * Membatalkan proses edit dan mereset form
+   */
   function cancelEdit() {
     setEditingUser(null);
     setForm(emptyForm);
   }
 
+  // Memfilter daftar pengguna berdasarkan query pencarian dan filter role
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return users.filter((u) => {
@@ -99,25 +131,30 @@ export default function UsersAdmin({
     });
   }, [users, query, roleFilter]);
 
+  /**
+   * Menghandle pengiriman form untuk menambah/memperbarui pengguna
+   * 
+   * @param e - Event pengiriman form
+   */
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Buat objek biasa alih-alih langsung menggunakan FormData
+      // Membuat objek payload
       const payload: any = {};
       payload.name = form.name;
       
-      // Untuk user baru, tambahkan domain staffhub.com
-      // Untuk edit user, gunakan email asli
+      // Untuk pengguna baru, menambahkan domain staffhub.com
+      // Untuk edit pengguna, menggunakan email asli
       const email = editingUser ? form.email : `${form.email}@staffhub.com`;
       payload.email = email;
       
       payload.role = form.role;
       if (form.password) payload.password = form.password;
 
-      // Buat FormData dari objek
+      // Membuat FormData dari objek
       const fd = new FormData();
       for (const key in payload) {
         if (payload[key] !== undefined) {
@@ -129,7 +166,7 @@ export default function UsersAdmin({
         fd.append("id", String(editingUser.user_id));
         await updateUserAction(fd);
 
-        // Optimistic kecil
+        // Update optimis
         setUsers((arr) =>
           arr.map((x) =>
             x.user_id === editingUser.user_id
@@ -165,6 +202,11 @@ export default function UsersAdmin({
     }
   }
 
+  /**
+   * Menonaktifkan pengguna
+   * 
+   * @param u - Data pengguna yang akan dinonaktifkan
+   */
   async function deactivateUser(u: UserRow) {
     const res = await Swal.fire({
       icon: "warning",
@@ -176,16 +218,16 @@ export default function UsersAdmin({
     if (!res.isConfirmed) return;
 
     try {
-      // Buat objek payload
+      // Membuat objek payload
       const payload = { id: u.user_id };
       
-      // Buat FormData dari objek
+      // Membuat FormData dari objek
       const fd = new FormData();
       fd.append("id", String(payload.id));
       
       await deleteUserAction(fd);
 
-      // Optimistic kecil
+      // Update optimis
       setUsers((arr) => arr.filter((x) => x.user_id !== u.user_id));
       await Swal.fire({
         icon: "success",
@@ -417,6 +459,14 @@ export default function UsersAdmin({
 
 /* ==== Small UI helpers ==== */
 
+/**
+ * Komponen sel header tabel
+ * 
+ * @param children - Konten yang akan ditampilkan di sel header
+ * @param center - Apakah konten harus di tengah
+ * @param classNameOverride - Class CSS tambahan
+ * @returns Elemen sel header tabel
+ */
 function Th({
   children,
   center,
@@ -433,6 +483,15 @@ function Th({
   );
 }
 
+/**
+ * Komponen sel data tabel
+ * 
+ * @param children - Konten yang akan ditampilkan di sel data
+ * @param className - Class CSS tambahan
+ * @param center - Apakah konten harus di tengah
+ * @param colSpan - Jumlah kolom yang akan digabung
+ * @returns Elemen sel data tabel
+ */
 function Td({
   children,
   className = "",
@@ -456,6 +515,20 @@ function Td({
   );
 }
 
+/**
+ * Komponen input floating dengan ikon
+ * 
+ * @param label - Label untuk input
+ * @param value - Nilai input
+ * @param onChange - Handler perubahan nilai
+ * @param type - Tipe input (default: text)
+ * @param placeholder - Placeholder input
+ * @param icon - Ikon yang akan ditampilkan
+ * @param className - Class CSS tambahan
+ * @param disabled - Apakah input dinonaktifkan
+ * @param required - Apakah input wajib diisi
+ * @returns Elemen input floating
+ */
 function FloatingInput({
   label,
   value,
@@ -498,6 +571,14 @@ function FloatingInput({
   );
 }
 
+/**
+ * Komponen dropdown pemilihan role
+ * 
+ * @param value - Nilai role yang dipilih
+ * @param onChange - Handler perubahan nilai
+ * @param className - Class CSS tambahan
+ * @returns Elemen dropdown pemilihan role
+ */
 function RoleSelect({
   value,
   onChange,
@@ -535,6 +616,18 @@ function RoleSelect({
   );
 }
 
+/**
+ * Komponen input floating dengan domain email
+ * 
+ * @param label - Label untuk input
+ * @param value - Nilai input
+ * @param onChange - Handler perubahan nilai
+ * @param placeholder - Placeholder input
+ * @param icon - Ikon yang akan ditampilkan
+ * @param className - Class CSS tambahan
+ * @param disabled - Apakah input dinonaktifkan
+ * @returns Elemen input floating dengan domain email
+ */
 function FloatingInputWithDomain({
   label,
   value,
@@ -552,7 +645,7 @@ function FloatingInputWithDomain({
   className?: string;
   disabled?: boolean;
 }) {
-  // Hapus domain staffhub.com jika ada saat menampilkan di input
+  // Menghapus domain staffhub.com jika ada saat menampilkan di input
   const displayValue = value.endsWith('@staffhub.com') 
     ? value.replace('@staffhub.com', '') 
     : value;

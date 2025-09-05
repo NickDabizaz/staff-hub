@@ -5,7 +5,10 @@ import { listTeamsService } from "./services/teamService";
 import { listUsersService } from "../users/services/userService";
 import TeamsAdmin from "./components/TeamsAdmin";
 
+// Main page for team management
+// Only accessible to admin users
 export default async function TeamsPage() {
+  // Authentication check
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
@@ -13,6 +16,7 @@ export default async function TeamsPage() {
   if (!user) redirect("/login");
   if (user.role !== "ADMIN") redirect("/");
 
+  // Fetch initial data for teams and users
   const teamsRes = await listTeamsService();
   const teams = teamsRes.ok ? teamsRes.data : [];
 

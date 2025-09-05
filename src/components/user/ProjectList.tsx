@@ -1,5 +1,9 @@
 import React from "react";
 
+/**
+ * Interface untuk struktur data proyek
+ * Mendefinisikan properti yang dimiliki setiap proyek
+ */
 interface Project {
   id: string;
   title: string;
@@ -7,12 +11,29 @@ interface Project {
   status: string;
 }
 
+/**
+ * Interface untuk props komponen ProjectList
+ * Mendefinisikan struktur data yang diterima oleh komponen ProjectList
+ */
 interface ProjectListProps {
   projects: Project[];
 }
 
+/**
+ * Komponen untuk menampilkan daftar proyek dalam bentuk kartu
+ * Menampilkan setiap proyek sebagai kartu yang dapat diklik untuk melihat detail
+ * 
+ * @param projects - Array dari objek proyek yang akan ditampilkan
+ * @returns Komponen React yang menampilkan daftar proyek
+ */
 export default function ProjectList({ projects }: ProjectListProps) {
-  // Fungsi untuk menentukan class status badge
+  /**
+   * Fungsi untuk menentukan kelas CSS berdasarkan status proyek
+   * Digunakan untuk memberikan styling yang berbeda berdasarkan status proyek
+   * 
+   * @param status - Status proyek dalam bentuk string
+   * @returns Nama kelas CSS yang sesuai dengan status proyek
+   */
   const getStatusClass = (status: string) => {
     switch (status.toLowerCase()) {
       case "in progress":

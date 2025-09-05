@@ -7,6 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { format, isPast, isFuture, differenceInDays } from "date-fns";
 import { id } from "date-fns/locale";
 
+/**
+ * Interface untuk struktur data tugas terlambat
+ * Mendefinisikan properti yang dimiliki setiap tugas terlambat
+ */
 interface OverdueTask {
   task_id: number;
   task_title: string;
@@ -16,6 +20,10 @@ interface OverdueTask {
   days_overdue: number;
 }
 
+/**
+ * Interface untuk struktur data tugas yang akan jatuh tempo
+ * Mendefinisikan properti yang dimiliki setiap tugas yang akan jatuh tempo
+ */
 interface DueSoonTask {
   task_id: number;
   task_title: string;
@@ -25,6 +33,10 @@ interface DueSoonTask {
   days_until_due: number;
 }
 
+/**
+ * Interface untuk struktur data progress proyek
+ * Mendefinisikan properti yang dimiliki setiap proyek beserta progressnya
+ */
 interface ProjectProgress {
   project_id: number;
   project_name: string;
@@ -34,7 +46,14 @@ interface ProjectProgress {
   progress_percentage: number;
 }
 
+/**
+ * Halaman dashboard administrator yang menampilkan ringkasan aktivitas sistem
+ * Menampilkan statistik proyek, tugas terlambat, dan tugas yang akan jatuh tempo
+ * 
+ * @returns Halaman dashboard admin dengan berbagai komponen statistik
+ */
 export default async function AdminDashboardPage() {
+  // Memeriksa autentikasi pengguna - hanya admin yang dapat mengakses halaman ini
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
@@ -44,7 +63,7 @@ export default async function AdminDashboardPage() {
 
   const sb = supabaseServer();
 
-  // Fetch overdue tasks
+  // Mengambil data tugas yang terlambat
   const { data: overdueTasks } = await sb
     .from("tasks")
     .select(`
@@ -58,7 +77,7 @@ export default async function AdminDashboardPage() {
     .neq("task_status", "DONE")
     .order("task_due_date", { ascending: true });
 
-  // Transform overdue tasks data
+  // Mengubah format data tugas terlambat
   const transformedOverdueTasks: OverdueTask[] = (overdueTasks || []).map(task => ({
     task_id: task.task_id,
     task_title: task.task_title,
@@ -68,7 +87,7 @@ export default async function AdminDashboardPage() {
     days_overdue: Math.abs(differenceInDays(new Date(), new Date(task.task_due_date)))
   }));
 
-  // Fetch due soon tasks (within 7 days)
+  // Mengambil data tugas yang akan jatuh tempo dalam 7 hari
   const oneWeekFromNow = new Date();
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
@@ -86,7 +105,7 @@ export default async function AdminDashboardPage() {
     .neq("task_status", "DONE")
     .order("task_due_date", { ascending: true });
 
-  // Transform due soon tasks data
+  // Mengubah format data tugas yang akan jatuh tempo
   const transformedDueSoonTasks: DueSoonTask[] = (dueSoonTasks || []).map(task => ({
     task_id: task.task_id,
     task_title: task.task_title,
@@ -96,7 +115,7 @@ export default async function AdminDashboardPage() {
     days_until_due: differenceInDays(new Date(task.task_due_date), new Date())
   }));
 
-  // Fetch project progress data
+  // Mengambil data progress proyek
   const { data: projects } = await sb
     .from("projects")
     .select(`
@@ -107,7 +126,7 @@ export default async function AdminDashboardPage() {
     `)
     .order("project_deadline", { ascending: true });
 
-  // Transform project progress data
+  // Mengubah format data progress proyek
   const transformedProjects: ProjectProgress[] = (projects || []).map(project => {
     const totalTasks = project.tasks?.length || 0;
     const completedTasks = project.tasks?.filter(t => t.task_status === "DONE").length || 0;
@@ -123,7 +142,7 @@ export default async function AdminDashboardPage() {
     };
   });
 
-  // Calculate summary statistics
+  // Menghitung statistik ringkasan
   const totalProjects = projects?.length || 0;
   const totalTasks = projects?.reduce((sum, project) => sum + (project.tasks?.length || 0), 0) || 0;
   const overdueTasksCount = transformedOverdueTasks.length;
@@ -138,7 +157,7 @@ export default async function AdminDashboardPage() {
         </Link>
       </header>
 
-      {/* Summary Cards */}
+      {/* Kartu Ringkasan Statistik */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -169,7 +188,7 @@ export default async function AdminDashboardPage() {
         </Card>
       </section>
 
-      {/* Overdue Tasks */}
+      {/* Tugas Terlambat */}
       <section>
         <Card>
           <CardHeader>
@@ -205,7 +224,7 @@ export default async function AdminDashboardPage() {
         </Card>
       </section>
 
-      {/* Due Soon Tasks */}
+      {/* Tugas yang Akan Jatuh Tempo */}
       <section>
         <Card>
           <CardHeader>
@@ -241,7 +260,7 @@ export default async function AdminDashboardPage() {
         </Card>
       </section>
 
-      {/* Project Progress */}
+      {/* Progress Proyek */}
       <section>
         <Card>
           <CardHeader>

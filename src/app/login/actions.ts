@@ -4,6 +4,13 @@ import { cookies } from "next/headers";
 import { supabaseServer } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
+/**
+ * Fungsi untuk menangani proses login pengguna
+ * Memvalidasi kredensial pengguna dan membuat sesi login jika berhasil
+ * 
+ * @param payload - Objek yang berisi email dan password pengguna
+ * @returns Mengarahkan pengguna ke halaman yang sesuai berdasarkan hasil autentikasi
+ */
 export async function loginAction(payload: { email: string; password: string }) {
   const email = payload?.email ?? "";
   const password = payload?.password ?? "";
@@ -14,12 +21,14 @@ export async function loginAction(payload: { email: string; password: string }) 
     .eq("user_email", email)
     .single();
 
+  // Jika terjadi kesalahan atau pengguna tidak ditemukan atau password tidak cocok
   if (error || !user || user.user_password !== password) {
     const c = await cookies();
     c.set("sb_login_error", "Email atau password salah", { path: "/login", maxAge: 5 });
     redirect("/login");
   }
 
+  // Jika autentikasi berhasil, buat cookie sesi pengguna
   const c = await cookies();
   c.set(
     "sb_user",

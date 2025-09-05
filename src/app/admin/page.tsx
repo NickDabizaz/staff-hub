@@ -2,15 +2,24 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+/**
+ * Halaman dashboard utama untuk administrator
+ * Menampilkan menu navigasi ke berbagai halaman administrasi
+ * 
+ * @returns Halaman dashboard admin dengan daftar menu
+ */
 export default async function AdminDashboard() {
+  // Memeriksa autentikasi pengguna
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
 
+  // Jika tidak ada pengguna yang login, arahkan ke halaman login
   if (!user) redirect("/login");
+  // Jika pengguna bukan admin, arahkan ke halaman utama
   if (user.role !== "ADMIN") redirect("/");
 
-  // definisi menu
+  // Definisi menu-menu administrasi yang tersedia
   const menus = [
     {
       href: "/admin/dashboard",

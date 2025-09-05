@@ -5,7 +5,10 @@ import { listTeamsService } from "@/app/admin/teams/services/teamService";
 import { listProjectsService } from "./services/projectService";
 import ProjectsList from "./components/ProjectsList";
 
+// Main page component for displaying all projects
+// Only accessible to admin users
 export default async function ProjectsPage() {
+  // Authentication check
   const cookieStore = await cookies();
   const raw = cookieStore.get("sb_user")?.value;
   const user = raw ? JSON.parse(raw) : null;
@@ -13,6 +16,7 @@ export default async function ProjectsPage() {
   if (!user) redirect("/login");
   if (user.role !== "ADMIN") redirect("/");
 
+  // Fetch teams and projects data
   const teamsRes = await listTeamsService();
   const teams = teamsRes.ok ? teamsRes.data : [];
 

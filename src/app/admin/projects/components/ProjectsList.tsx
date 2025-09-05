@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ProjectWithTeams } from "../types/projectTypes";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
 
+// Component to display a list of projects in a table format
 export default function ProjectsList({ 
   projects, 
   teams 
@@ -9,6 +10,7 @@ export default function ProjectsList({
   projects: ProjectWithTeams[]; 
   teams: TeamWithMembers[]; 
 }) {
+  // Helper function to get team name by ID
   const getTeamName = (teamId: number) => {
     const team = teams.find(t => t.team_id === teamId);
     return team ? team.team_name : `Team #${teamId}`;
@@ -81,6 +83,7 @@ export default function ProjectsList({
   );
 }
 
+// Table header cell component
 function Th({
   children,
   center,
@@ -95,6 +98,7 @@ function Th({
   );
 }
 
+// Table data cell component
 function Td({
   children,
   center = false,
