@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Swal from "sweetalert2";
 import { useKanban } from "./kanban-context";
 import { EditTaskModal } from "./edit-task-modal";
 
@@ -41,12 +42,32 @@ export function TaskCard({
   const { deleteTask, updateTask } = useKanban();
 
   const handleDelete = async () => {
-    if (confirm("Apakah Anda yakin ingin menghapus task ini?")) {
+    const result = await Swal.fire({
+      title: "Apakah Anda yakin?",
+      text: "Task yang dihapus tidak dapat dikembalikan!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal"
+    });
+
+    if (result.isConfirmed) {
       try {
         await deleteTask(task.task_id);
+        Swal.fire({
+          title: "Dihapus!",
+          text: "Task telah berhasil dihapus.",
+          icon: "success"
+        });
       } catch (error) {
         console.error("Failed to delete task:", error);
-        alert("Gagal menghapus task");
+        Swal.fire({
+          title: "Gagal!",
+          text: "Gagal menghapus task.",
+          icon: "error"
+        });
       }
     }
   };

@@ -69,13 +69,16 @@ export function TaskTodos({ taskId }: { taskId: number }) {
   };
 
   const handleDelete = async (todoId: number) => {
+    // Menggunakan SweetAlert untuk konfirmasi hapus
     const result = await Swal.fire({
       title: "Hapus Todo?",
       text: "Apakah Anda yakin ingin menghapus todo ini?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya, hapus",
-      cancelButtonText: "Batal"
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280"
     });
 
     if (!result.isConfirmed) return;
