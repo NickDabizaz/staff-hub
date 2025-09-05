@@ -25,3 +25,8 @@ export const UpdateTeamMembersSchema = z.object({
   team_id: z.number().int().positive(),
   member_user_ids: z.array(z.number().int().positive()).default([]),
 });
+
+export const SetTeamMemberRolesSchema = z.object({
+  team_member_id: z.number().int().positive(),
+  job_role_ids: z.array(z.number().int().positive()).default([]),
+});

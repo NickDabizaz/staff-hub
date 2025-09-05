@@ -28,6 +28,17 @@ function mapTeamRow(raw: any): TeamWithMembers {
   } as TeamWithMembers;
 }
 
+export async function getJobRolesRepo(): Promise<Result<any[]>> {
+  const sb = supabaseServer();
+  const { data, error } = await sb
+    .from("job_roles")
+    .select("job_role_id, job_role_name")
+    .order("job_role_name");
+    
+  if (error) return err(error.message);
+  return ok(data || []);
+}
+
 export async function listTeamsWithMembersRepo(): Promise<
   Result<TeamWithMembers[]>
 > {
@@ -146,6 +157,50 @@ export async function removeTeamMemberRepo(team_member_id: number): Promise<Resu
   return ok(null);
 }
 
+export async function getTeamMemberRolesRepo(team_member_id: number): Promise<Result<any[]>> {
+  const sb = supabaseServer();
+  const { data, error } = await sb
+    .from("team_member_roles")
+    .select("job_role_id")
+    .eq("team_member_id", team_member_id);
+    
+  if (error) return err(error.message);
+  return ok(data?.map(item => item.job_role_id) || []);
+}
+
+export async function setTeamMemberRolesRepo(team_member_id: number, job_role_ids: number[]): Promise<Result<null>> {
+  const sb = supabaseServer();
+  
+  // Validasi input
+  if (job_role_ids.some(id => isNaN(id) || id <= 0)) {
+    return err("Invalid job role IDs");
+  }
+  
+  // Hapus semua job role yang ada untuk team member ini
+  const { error: deleteError } = await sb
+    .from("team_member_roles")
+    .delete()
+    .eq("team_member_id", team_member_id);
+  
+  if (deleteError) return err(deleteError.message);
+  
+  // Tambahkan job role baru jika ada
+  if (job_role_ids.length > 0) {
+    const rows = job_role_ids.map(job_role_id => ({
+      team_member_id,
+      job_role_id
+    }));
+    
+    const { error: insertError } = await sb
+      .from("team_member_roles")
+      .insert(rows);
+      
+    if (insertError) return err(insertError.message);
+  }
+  
+  return ok(null);
+}
+
 export async function updateTeamPMRepo(input: {
   team_id: number;
   pm_user_id: number;
@@ -189,30 +244,43 @@ export async function updateTeamMembersRepo(input: {
   member_user_ids: number[];
 }): Promise<Result<null>> {
   const sb = supabaseServer();
-  
-  // 1. Hapus semua anggota STAFF (bukan PM)
-  const { error: removeErr } = await sb
+  // Ambil daftar anggota STAFF saat ini untuk tim ini
+  const { data: currentRows, error: currentErr } = await sb
     .from("team_members")
-    .delete()
+    .select("team_member_id,user_id")
     .match({ team_id: input.team_id, team_member_role: "STAFF" });
-  
-  if (removeErr) return err(removeErr.message);
-  
-  // 2. Tambahkan anggota baru
-  if (input.member_user_ids.length > 0) {
-    const rows = input.member_user_ids.map((user_id) => ({
+
+  if (currentErr) return err(currentErr.message);
+
+  const currentUserIds = new Set((currentRows ?? []).map((r: any) => r.user_id as number));
+  const desiredUserIds = Array.from(new Set(input.member_user_ids.filter(Boolean)));
+
+  // Hitung diff: siapa yang harus dihapus dan siapa yang harus ditambahkan
+  const toDelete = (currentRows ?? [])
+    .filter((r: any) => !desiredUserIds.includes(r.user_id))
+    .map((r: any) => r.team_member_id as number);
+
+  const toAdd = desiredUserIds.filter((uid) => !currentUserIds.has(uid));
+
+  // Hapus hanya anggota yang tidak lagi dipilih
+  if (toDelete.length > 0) {
+    const { error: removeErr } = await sb
+      .from("team_members")
+      .delete()
+      .in("team_member_id", toDelete);
+    if (removeErr) return err(removeErr.message);
+  }
+
+  // Tambahkan hanya anggota baru
+  if (toAdd.length > 0) {
+    const rows = toAdd.map((user_id) => ({
       team_id: input.team_id,
       user_id,
-      team_member_role: "STAFF"
+      team_member_role: "STAFF" as TeamMemberRole,
     }));
-    
-    const { error: insertErr } = await sb
-      .from("team_members")
-      .insert(rows);
-    
+    const { error: insertErr } = await sb.from("team_members").insert(rows);
     if (insertErr) return err(insertErr.message);
   }
-  
+
   return ok(null);
 }
-

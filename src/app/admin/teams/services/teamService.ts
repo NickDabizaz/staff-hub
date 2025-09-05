@@ -4,8 +4,22 @@ import { cookies } from "next/headers";
 import { err, ok, Result } from "@/lib/result";
 import { SessionUser } from "@/app/admin/users/types/userTypes";
 
-import { TeamMemberRole, TeamMemberRow, TeamWithMembers } from "../types/teamTypes";
-import { addTeamMemberRepo, createTeamWithMembersRepo, listTeamsWithMembersRepo, removeTeamMemberRepo, updateTeamMembersRepo, updateTeamPMRepo } from "../data/teamsRepo";
+import {
+  TeamMemberRole,
+  TeamMemberRow,
+  TeamWithMembers,
+} from "../types/teamTypes";
+import {
+  addTeamMemberRepo,
+  createTeamWithMembersRepo,
+  listTeamsWithMembersRepo,
+  removeTeamMemberRepo,
+  updateTeamMembersRepo,
+  updateTeamPMRepo,
+  getJobRolesRepo,
+  setTeamMemberRolesRepo,
+  getTeamMemberRolesRepo,
+} from "../data/teamsRepo";
 
 // Helpers (mirrored from userService)
 async function currentUser(): Promise<SessionUser | null> {
@@ -62,6 +76,35 @@ export async function removeTeamMemberService(
   return await removeTeamMemberRepo(team_member_id);
 }
 
+export async function getTeamMemberRolesService(
+  team_member_id: number
+): Promise<Result<number[]>> {
+  const me = await currentUser();
+  const auth = ensureAdmin(me);
+  if (!auth.ok) return auth as unknown as Result<number[]>;
+
+  const result = await getTeamMemberRolesRepo(team_member_id);
+  if (!result.ok) return result as unknown as Result<number[]>;
+  
+  return ok(result.data);
+}
+
+export async function setTeamMemberRolesService(
+  team_member_id: number,
+  job_role_ids: number[]
+): Promise<Result<null>> {
+  const me = await currentUser();
+  const auth = ensureAdmin(me);
+  if (!auth.ok) return auth;
+
+  // Validasi input
+  if (job_role_ids.some(id => isNaN(id) || id <= 0)) {
+    return err("Invalid job role IDs");
+  }
+
+  return await setTeamMemberRolesRepo(team_member_id, job_role_ids);
+}
+
 export async function updateTeamPMService(input: {
   team_id: number;
   pm_user_id: number;
@@ -82,4 +125,12 @@ export async function updateTeamMembersService(input: {
   if (!auth.ok) return auth;
 
   return await updateTeamMembersRepo(input);
+}
+
+export async function getJobRolesService(): Promise<Result<any[]>> {
+  const me = await currentUser();
+  const auth = ensureAdmin(me);
+  if (!auth.ok) return auth as unknown as Result<any[]>;
+
+  return await getJobRolesRepo();
 }

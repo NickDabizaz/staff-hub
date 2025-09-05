@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { UserRow } from "@/app/admin/users/types/userTypes";
 import { TeamWithMembers, TeamMemberRow } from "../types/teamTypes";
-import { updateTeamPMAction, updateTeamMembersAction } from "../actions";
-import { Search, X, User, Shield, Users, Save } from "lucide-react";
+import { updateTeamPMAction, updateTeamMembersAction, getTeamMemberRolesAction, setTeamMemberRolesAction } from "../actions";
+import { Search, X, User, Shield, Users, Save, Briefcase } from "lucide-react";
 
 interface TeamDetailModalProps {
   team: TeamWithMembers;
@@ -14,12 +14,12 @@ interface TeamDetailModalProps {
   onUpdateTeam: (updatedTeam: TeamWithMembers) => void;
 }
 
-export default function TeamDetailModal({
+const TeamDetailModal = ({
   team,
   users,
   onClose,
   onUpdateTeam,
-}: TeamDetailModalProps) {
+}: TeamDetailModalProps) => {
   // State untuk PM dan anggota
   const [selectedPMId, setSelectedPMId] = useState<number>(
     team.members.find((m) => m.team_member_role === "PM")?.user.user_id || 
@@ -34,6 +34,10 @@ export default function TeamDetailModal({
   
   const [searchQuery, setSearchQuery] = useState("");
   const [saving, setSaving] = useState(false);
+  
+  // State untuk job roles
+  const [jobRoles, setJobRoles] = useState<{job_role_id: number, job_role_name: string}[]>([]);
+  const [memberJobRoles, setMemberJobRoles] = useState<Record<number, number[]>>({});
 
   // Filter user berdasarkan query pencarian
   const filteredUsers = users.filter((user) => {
@@ -138,12 +142,223 @@ export default function TeamDetailModal({
     // Jangan biarkan PM ditambahkan sebagai anggota biasa
     if (userId === selectedPMId) return;
     
-    setSelectedMemberIds((prev) =>
-      prev.includes(userId)
+    console.log('Toggling member:', userId);
+    
+    // Periksa apakah user sudah menjadi anggota
+    const isCurrentlyMember = selectedMemberIds.includes(userId);
+    
+    setSelectedMemberIds((prev) => {
+      const newSelected = isCurrentlyMember
         ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
-    );
+        : [...prev, userId];
+      
+      console.log('New selected members:', newSelected);
+      return newSelected;
+    });
   };
+
+  // Handler untuk mengatur job roles anggota
+  const setMemberJobRolesHandler = async (userId: number, jobRoleIds: number[]) => {
+    try {
+      console.log('Setting job roles for user:', userId, 'roles:', jobRoleIds);
+      
+      // Temukan team_member_id untuk user ini
+      let teamMember = team.members.find(m => m.user.user_id === userId);
+      
+      // Jika tidak ditemukan dalam team.members, mungkin user baru yang belum disimpan
+      // Kita perlu mencari di selectedMemberIds
+      if (!teamMember && selectedMemberIds.includes(userId)) {
+        // Buat objek sementara untuk user baru
+        teamMember = {
+          team_member_id: 0, // Akan diisi setelah disimpan
+          team_id: team.team_id,
+          team_member_role: "STAFF",
+          user: users.find(u => u.user_id === userId) || {
+            user_id: userId,
+            user_name: "",
+            user_email: "",
+            user_system_role: "STAFF"
+          }
+        };
+      }
+      
+      if (!teamMember) {
+        console.warn('User not found in team members or selected members');
+        return;
+      }
+
+      // Import supabase client dynamically
+      const { supabaseServer } = await import('@/lib/supabase-server');
+      const sb = supabaseServer();
+      
+      // Jika ini user baru (team_member_id = 0), kita perlu menyimpan user dulu
+      let actualTeamMemberId = teamMember.team_member_id;
+      if (actualTeamMemberId === 0) {
+        console.log('Adding new team member for user:', userId);
+        
+        // Tambahkan user ke team dulu
+        const { data: newMember, error: addError } = await sb
+          .from("team_members")
+          .insert({
+            team_id: team.team_id,
+            user_id: userId,
+            team_member_role: "STAFF"
+          })
+          .select()
+          .single();
+          
+        if (addError) throw new Error(addError.message);
+        actualTeamMemberId = newMember.team_member_id;
+        console.log('New team member created with ID:', actualTeamMemberId);
+      }
+      
+      // Hapus semua job role yang ada untuk team member ini
+      console.log('Deleting existing job roles for team member:', actualTeamMemberId);
+      const { error: deleteError } = await sb
+        .from("team_member_roles")
+        .delete()
+        .eq("team_member_id", actualTeamMemberId);
+      
+      if (deleteError) throw new Error(deleteError.message);
+      
+      // Tambahkan job role baru jika ada
+      if (jobRoleIds.length > 0) {
+        console.log('Inserting new job roles:', jobRoleIds);
+        const rows = jobRoleIds.map(job_role_id => ({
+          team_member_id: actualTeamMemberId,
+          job_role_id
+        }));
+        
+        const { error: insertError } = await sb
+          .from("team_member_roles")
+          .insert(rows);
+          
+        if (insertError) throw new Error(insertError.message);
+      }
+      
+      // Update state lokal secara langsung untuk UI yang responsif
+      console.log('Updating local state for user:', userId);
+      setMemberJobRoles(prev => {
+        // Pastikan kita membuat objek baru untuk memicu re-render
+        const newMemberJobRoles = { ...prev };
+        newMemberJobRoles[userId] = [...jobRoleIds]; // Buat salinan baru untuk memastikan re-render
+        console.log('Updated state:', newMemberJobRoles);
+        return newMemberJobRoles;
+      });
+      
+      console.log('Job roles successfully updated for user:', userId);
+    } catch (error: any) {
+      console.error('Failed to set member job roles:', error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal menyimpan job roles",
+        text: error?.message || "Terjadi kesalahan saat menyimpan job roles",
+      });
+    }
+  };
+
+  // Fetch job roles with caching
+  useEffect(() => {
+    const fetchJobRoles = async () => {
+      try {
+        // Check if we already have job roles in a global cache
+        const cachedJobRoles = sessionStorage.getItem('jobRoles');
+        if (cachedJobRoles) {
+          setJobRoles(JSON.parse(cachedJobRoles));
+          return;
+        }
+        
+        // Import supabase client dynamically
+        const { supabaseServer } = await import('@/lib/supabase-server');
+        const sb = supabaseServer();
+        
+        const { data, error } = await sb
+          .from('job_roles')
+          .select('job_role_id, job_role_name')
+          .order('job_role_name');
+          
+        if (!error && data) {
+          setJobRoles(data);
+          // Cache the job roles for future use
+          sessionStorage.setItem('jobRoles', JSON.stringify(data));
+        }
+      } catch (error) {
+        console.error('Failed to fetch job roles:', error);
+      }
+    };
+
+    fetchJobRoles();
+  }, []);
+
+  // Fetch job roles for team members
+  useEffect(() => {
+    const fetchMemberJobRoles = async () => {
+      try {
+        console.log('Fetching member job roles for team:', team.team_id);
+        
+        // Import supabase client dynamically
+        const { supabaseServer } = await import('@/lib/supabase-server');
+        const sb = supabaseServer();
+        
+        // Fetch job roles for each team member
+        const jobRolesMap: Record<number, number[]> = {};
+        for (const member of team.members) {
+          const { data, error } = await sb
+            .from("team_member_roles")
+            .select("job_role_id")
+            .eq("team_member_id", member.team_member_id);
+            
+          if (!error && data) {
+            jobRolesMap[member.user.user_id] = data.map(item => item.job_role_id);
+          }
+        }
+        
+        // Tambahkan juga untuk selected members yang belum tersimpan
+        for (const userId of selectedMemberIds) {
+          if (!(userId in jobRolesMap)) {
+            jobRolesMap[userId] = [];
+          }
+        }
+        
+        console.log('Fetched job roles map:', jobRolesMap);
+        setMemberJobRoles(jobRolesMap);
+      } catch (error) {
+        console.error('Failed to fetch member job roles:', error);
+      }
+    };
+
+    fetchMemberJobRoles();
+  }, [team, selectedMemberIds]);
+
+  // Update job roles state when selected members change
+  useEffect(() => {
+    // Pastikan semua selected members memiliki entry dalam state job roles
+    if (selectedMemberIds && Array.isArray(selectedMemberIds)) {
+      const newState: Record<number, number[]> = { ...memberJobRoles };
+      let hasChanges = false;
+      
+      selectedMemberIds.forEach(userId => {
+        if (!(userId in newState)) {
+          newState[userId] = [];
+          hasChanges = true;
+        }
+      });
+      
+      // Juga pastikan user yang tidak lagi dipilih dihapus dari state
+      Object.keys(newState).forEach(userIdStr => {
+        const userId = parseInt(userIdStr);
+        if (!selectedMemberIds.includes(userId) && team.members.some(m => m.user.user_id === userId)) {
+          // Hapus job roles untuk user yang tidak lagi dipilih
+          delete newState[userId];
+          hasChanges = true;
+        }
+      });
+      
+      if (hasChanges) {
+        setMemberJobRoles(newState);
+      }
+    }
+  }, [selectedMemberIds, memberJobRoles, team.members]);
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur">
@@ -235,34 +450,74 @@ export default function TeamDetailModal({
                 );
                 
                 return (
-                  <label
+                  <div 
                     key={user.user_id}
-                    className={`flex items-center gap-3 rounded-lg border p-3 ${
+                    className={`flex flex-col rounded-lg border p-3 ${
                       isMember
                         ? "border-white/20 bg-white/10"
                         : "border-white/10 bg-white/5 hover:bg-white/10"
                     }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={isMember}
-                      onChange={() => toggleMember(user.user_id)}
-                      className="size-4"
-                    />
-                    <User className="size-5 text-neutral-400" />
-                    <div className="flex-1">
-                      <div className="font-medium">{user.user_name}</div>
-                      <div className="text-sm text-neutral-400">{user.user_email}</div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={isMember}
+                        onChange={() => toggleMember(user.user_id)}
+                        className="size-4"
+                      />
+                      <User className="size-5 text-neutral-400" />
+                      <div className="flex-1">
+                        <div className="font-medium">{user.user_name}</div>
+                        <div className="text-sm text-neutral-400">{user.user_email}</div>
+                      </div>
+                      <div className="text-xs rounded bg-white/10 px-2 py-1">
+                        {user.user_system_role}
+                      </div>
+                      {isCurrentMember && (
+                        <span className="rounded bg-blue-500/20 px-2 py-0.5 text-xs text-blue-300">
+                          Saat Ini
+                        </span>
+                      )}
                     </div>
-                    <div className="text-xs rounded bg-white/10 px-2 py-1">
-                      {user.user_system_role}
-                    </div>
-                    {isCurrentMember && (
-                      <span className="rounded bg-blue-500/20 px-2 py-0.5 text-xs text-blue-300">
-                        Saat Ini
-                      </span>
+                    
+                    {isMember && (
+                      <div className="mt-3 pl-7">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Briefcase className="size-4 text-neutral-400" />
+                          <span className="text-sm font-medium">Job Roles</span>
+                        </div>
+                        {jobRoles.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {jobRoles.map((role) => {
+                              // Pastikan userJobRoles didefinisikan untuk setiap user
+                              const userJobRoles = memberJobRoles[user.user_id] || [];
+                              return (
+                                <label 
+                                  key={`${user.user_id}-${role.job_role_id}`} 
+                                  className="flex items-center gap-1 text-sm"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={userJobRoles.includes(role.job_role_id)}
+                                    onChange={(e) => {
+                                      const newJobRoles = e.target.checked
+                                        ? [...userJobRoles, role.job_role_id]
+                                        : userJobRoles.filter(id => id !== role.job_role_id);
+                                      setMemberJobRolesHandler(user.user_id, newJobRoles);
+                                    }}
+                                    className="size-4"
+                                  />
+                                  <span>{role.job_role_name}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-neutral-400">Memuat job roles...</p>
+                        )}
+                      </div>
                     )}
-                  </label>
+                  </div>
                 );
               })}
           </div>
@@ -289,4 +544,6 @@ export default function TeamDetailModal({
       </div>
     </div>
   );
-}
+};
+
+export default TeamDetailModal;

@@ -7,6 +7,7 @@ import {
   RemoveTeamMemberSchema,
   UpdateTeamPMSchema,
   UpdateTeamMembersSchema,
+  SetTeamMemberRolesSchema,
 } from "./schemas/teamsSchemas";
 import {
   addTeamMemberService,
@@ -14,10 +15,19 @@ import {
   removeTeamMemberService,
   updateTeamPMService,
   updateTeamMembersService,
+  getJobRolesService,
+  getTeamMemberRolesService,
+  setTeamMemberRolesService,
 } from "./services/teamService";
 
 function num(v: FormDataEntryValue | null): number {
   return Number(v ?? NaN);
+}
+
+export async function getJobRolesAction() {
+  const res = await getJobRolesService();
+  if (!res.ok) throw new Error(res.error);
+  return res.data;
 }
 
 export async function createTeamAction(formData: FormData) {
@@ -77,6 +87,42 @@ export async function removeTeamMemberAction(formData: FormData) {
   }
 
   const res = await removeTeamMemberService(parsed.data.team_member_id);
+  if (!res.ok) throw new Error(res.error);
+
+  revalidatePath("/admin/teams");
+}
+
+export async function getTeamMemberRolesAction(team_member_id: number) {
+  const res = await getTeamMemberRolesService(team_member_id);
+  if (!res.ok) throw new Error(res.error);
+  return res.data;
+}
+
+export async function setTeamMemberRolesAction(formData: FormData) {
+  const team_member_id = num(formData.get("team_member_id"));
+  const rawJobRoles = String(formData.get("job_role_ids") || "[]");
+  
+  let job_role_ids: number[] = [];
+  try {
+    const parsed = JSON.parse(rawJobRoles);
+    if (Array.isArray(parsed)) {
+      job_role_ids = parsed.map((x) => Number(x)).filter(Boolean);
+    }
+  } catch (e) {
+    throw new Error("Format job roles tidak valid");
+  }
+
+  const payload = {
+    team_member_id,
+    job_role_ids,
+  };
+
+  const parsed = SetTeamMemberRolesSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input");
+  }
+
+  const res = await setTeamMemberRolesService(team_member_id, job_role_ids);
   if (!res.ok) throw new Error(res.error);
 
   revalidatePath("/admin/teams");
