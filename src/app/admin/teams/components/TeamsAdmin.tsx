@@ -20,7 +20,10 @@ import {
   ChevronDown,
   Shield,
   Users,
+  ArrowLeft,
 } from "lucide-react";
+import Sidebar from "@/app/admin/components/Sidebar";
+import Header from "@/app/admin/components/Header";
 
 /**
  * Komponen utama untuk antarmuka administrasi tim
@@ -252,207 +255,210 @@ export default function TeamsAdmin({
     });
   }, [teams, query]);
 
-  // ===== UI (Glassy) =====
+  // ===== UI (Mengikuti desain referensi) =====
   return (
-    <div className="min-h-[100dvh] w-full bg-gradient-to-b from-neutral-900 via-neutral-950 to-black text-neutral-100">
-      {/* Heading */}
-      <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
-        <div>
-          <h2 className="text-lg font-medium opacity-90">Kelola Teams</h2>
-          <p className="text-sm opacity-60">
-            Tambah, cari, dan kelola tim beserta anggotanya.
-          </p>
-        </div>
-      </div>
+    <div className="flex h-screen bg-slate-900">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-950 p-6 space-y-6">
+          <header>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-white">Kelola Teams</h1>
+                <p className="mt-1 text-slate-400">Tambah, cari, dan kelola tim beserta anggotanya.</p>
+              </div>
+              <Link 
+                href="/admin"
+                className="inline-flex items-center text-sm text-slate-300 hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" /> Kembali
+              </Link>
+            </div>
+          </header>
 
-      {/* Toolbar */}
-      <section className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between mb-6">
-        <div className="flex-1">
-          <div className="relative group">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Cari nama tim atau anggota"
-              className="w-full rounded-xl bg-white/5 border border-white/10 px-10 py-3 placeholder:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/30"
-            />
-            <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-70 group-focus-within:opacity-100" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.refresh()}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
-          >
-            <RefreshCw className="size-4" /> Refresh
-          </button>
-          <button
-            className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 px-3 py-2 text-sm"
-            onClick={() => setTeamModalOpen(true)}
-            disabled={loading}
-          >
-            <Plus className="size-4" /> Tambah Team
-          </button>
-        </div>
-      </section>
-
-      {/* Teams Section */}
-      <section className="mt-6">
-        <div className="overflow-hidden rounded-xl border border-white/10">
-          <table className="w-full text-sm">
-            <thead className="bg-white/5">
-              <tr>
-                <Th>Team ID</Th>
-                <Th>Nama</Th>
-                <Th center>Anggota</Th>
-                <Th>PM</Th>
-                <Th center>Aksi</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="py-10 text-center text-neutral-400"
-                  >
-                    Memuat…
-                  </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="py-10 text-center text-neutral-400"
-                  >
-                    Tidak ada data yang cocok.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((t) => {
-                  const pms = t.members.filter(
-                    (m) => m.team_member_role === "PM"
-                  );
-                  const pmName = pms[0]?.user?.user_name ?? "-";
-                  return (
-                    <tr key={t.team_id} className="border-t border-white/10">
-                      <Td className="w-16">{t.team_id}</Td>
-                      <Td>
-                        <div className="font-medium">{t.team_name}</div>
-                      </Td>
-                      <Td center>{t.members.length}</Td>
-                      <Td>{pmName}</Td>
-                      <Td center>
-                        <button
-                          onClick={() => openDetailModal(t)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-sm hover:bg-white/15"
-                        >
-                          <Users className="size-4" />
-                          Detail
-                        </button>
-                      </Td>
+          {/* Controls and Team Table */}
+          <div className="bg-slate-800/50 border border-slate-800 rounded-lg">
+            <div className="p-4 flex flex-col sm:flex-row gap-4 justify-between items-center border-b border-slate-800">
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Cari nama tim atau anggota..."
+                  className="w-full text-sm pl-9 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                />
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0">
+                <button
+                  onClick={() => router.refresh()}
+                  className="p-2 bg-slate-800 border border-slate-700 rounded-md hover:bg-slate-700 transition"
+                >
+                  <RefreshCw className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setTeamModalOpen(true)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-sky-500 transition-all duration-300 text-sm"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tambah Team
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">Team ID</th>
+                    <th scope="col" className="px-6 py-3">Nama</th>
+                    <th scope="col" className="px-6 py-3">Anggota</th>
+                    <th scope="col" className="px-6 py-3">PM</th>
+                    <th scope="col" className="px-6 py-3">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center text-slate-400">
+                        Memuat…
+                      </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                  ) : filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center text-slate-400">
+                        Tidak ada data yang cocok.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((t) => {
+                      const pms = t.members.filter(
+                        (m) => m.team_member_role === "PM"
+                      );
+                      const pmName = pms[0]?.user?.user_name ?? "-";
+                      return (
+                        <tr key={t.team_id}>
+                          <td className="px-6 py-4">{t.team_id}</td>
+                          <td className="px-6 py-4 font-medium text-white">{t.team_name}</td>
+                          <td className="px-6 py-4">{t.members.length}</td>
+                          <td className="px-6 py-4">{pmName}</td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => openDetailModal(t)}
+                              className="font-medium text-sky-400 hover:text-sky-300"
+                            >
+                              Detail
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      {error && <p className="text-sm text-red-400 mt-3">{error}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+        </main>
+      </div>
 
       {/* Create Team Modal */}
       {teamModalOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
-          <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-neutral-950 p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Buat Tim</h3>
-              <button
-                className="rounded-lg border border-white/10 px-2 py-1 text-xs hover:bg-white/10"
+        <div 
+          className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setTeamModalOpen(false)}
+        >
+          <div 
+            className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-4 border-b border-slate-800">
+              <h2 className="text-lg font-semibold text-white">Buat Tim Baru</h2>
+              <button 
                 onClick={() => setTeamModalOpen(false)}
+                className="text-slate-400 hover:text-white transition"
               >
-                Tutup
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
-            <form onSubmit={handleCreateTeam} className="space-y-3">
-              <FloatingInput
-                label="Nama Tim"
-                value={teamName}
-                onChange={setTeamName}
-                placeholder="Contoh: Squad Billing"
-                icon={<Shield className="size-4" />}
-                required
-              />
-
-              {/* PM select */}
-              <div>
-                <span className="mb-1 block text-xs uppercase tracking-wider text-neutral-300">
-                  Project Manager (PM)
-                </span>
-                <div className="relative">
+            <form onSubmit={handleCreateTeam}>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label htmlFor="team-name" className="block text-sm font-medium text-slate-300 mb-1">Nama Tim</label>
+                  <input
+                    type="text"
+                    id="team-name"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    placeholder="Contoh: Squad Billing"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="project-manager" className="block text-sm font-medium text-slate-300 mb-1">Project Manager (PM)</label>
                   <select
+                    id="project-manager"
                     value={pmId === "" ? "" : String(pmId)}
                     onChange={(e) =>
                       setPmId(e.target.value ? Number(e.target.value) : "")
                     }
                     required
-                    className="w-full appearance-none rounded-xl bg-white/5 border border-white/10 px-3 py-3 pr-9 focus:outline-none focus:ring-2 focus:ring-white/30"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
                   >
                     <option value="">Pilih PM</option>
                     {pmOptions.map((u) => (
                       <option key={u.user_id} value={u.user_id}>
-                        {u.user_name} ({u.user_email})
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 size-4 opacity-70" />
-                </div>
-              </div>
-
-              {/* Members multiselect */}
-              <div>
-                <span className="mb-1 block text-xs uppercase tracking-wider text-neutral-300">
-                  Anggota (opsional)
-                </span>
-                <div className="relative">
-                  <select
-                    multiple
-                    value={memberIds.map(String)}
-                    onChange={(e) => {
-                      const vals = Array.from(e.target.selectedOptions).map(
-                        (o) => Number(o.value)
-                      );
-                      setMemberIds(vals);
-                    }}
-                    className="h-40 w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/30"
-                  >
-                    {memberOptions.map((u) => (
-                      <option key={u.user_id} value={u.user_id}>
-                        {u.user_name} ({u.user_email})
+                        {u.user_name}
                       </option>
                     ))}
                   </select>
                 </div>
-                <p className="mt-1 text-xs text-neutral-400">
-                  PM akan otomatis ditambahkan sebagai anggota (role PM).
-                </p>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Anggota (Opsional)</label>
+                  <div className="max-h-48 overflow-y-auto bg-slate-800 border border-slate-700 rounded-md p-2 space-y-2">
+                    {memberOptions
+                      .filter(u => u.user_system_role !== "ADMIN" && u.user_id !== pmId)
+                      .map((u) => (
+                        <label 
+                          key={u.user_id} 
+                          className="flex items-center space-x-3 p-2 rounded hover:bg-slate-700/50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={memberIds.includes(u.user_id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setMemberIds(prev => [...prev, u.user_id]);
+                              } else {
+                                setMemberIds(prev => prev.filter(id => id !== u.user_id));
+                              }
+                            }}
+                            className="h-4 w-4 rounded bg-slate-700 border-slate-600 text-sky-500 focus:ring-sky-500"
+                          />
+                          <span className="text-sm">{u.user_name} ({u.user_email})</span>
+                        </label>
+                      ))}
+                  </div>
+                </div>
               </div>
-
-              <div className="mt-4 flex justify-end gap-2">
+              <div className="flex justify-end items-center p-4 bg-slate-800/50 border-t border-slate-800 rounded-b-lg">
                 <button
                   type="button"
-                  className="rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/10"
                   onClick={() => setTeamModalOpen(false)}
+                  className="px-4 py-2 text-sm font-semibold text-slate-300 bg-transparent rounded-md hover:bg-slate-700 transition"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 px-4 py-2 text-sm"
+                  className="ml-2 px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-md hover:bg-sky-500 transition disabled:opacity-50"
                 >
-                  <Plus className="size-4" /> Buat Tim
+                  {loading ? "Membuat..." : "Buat Tim"}
                 </button>
               </div>
             </form>
@@ -469,208 +475,6 @@ export default function TeamsAdmin({
           onUpdateTeam={updateTeamInList}
         />
       )}
-    </div>
-  );
-}
-
-/* ==== Small UI helpers ==== */
-
-/**
- * Komponen sel header tabel
- * 
- * @param children - Konten yang akan ditampilkan di sel header
- * @param center - Apakah konten harus di tengah
- * @param classNameOverride - Class CSS tambahan
- * @returns Elemen sel header tabel
- */
-function Th({
-  children,
-  center,
-  classNameOverride,
-}: {
-  children: React.ReactNode;
-  center?: boolean;
-  classNameOverride?: string;
-}) {
-  return (
-    <th
-      className={`${classNameOverride ?? "px-4 py-3 font-semibold"} ${
-        center ? "text-center" : ""
-      }`}
-    >
-      {children}
-    </th>
-  );
-}
-
-/**
- * Komponen sel data tabel
- * 
- * @param children - Konten yang akan ditampilkan di sel data
- * @param className - Class CSS tambahan
- * @param center - Apakah konten harus di tengah
- * @param colSpan - Jumlah kolom yang akan digabung
- * @returns Elemen sel data tabel
- */
-function Td({
-  children,
-  className = "",
-  center = false,
-  colSpan,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  center?: boolean;
-  colSpan?: number;
-}) {
-  return (
-    <td
-      className={`px-4 py-3 align-middle ${
-        center ? "text-center" : ""
-      } ${className}`}
-      colSpan={colSpan}
-    >
-      {children}
-    </td>
-  );
-}
-
-/**
- * Komponen input floating dengan ikon
- * 
- * @param label - Label untuk input
- * @param value - Nilai input
- * @param onChange - Handler perubahan nilai
- * @param type - Tipe input (default: text)
- * @param placeholder - Placeholder input
- * @param icon - Ikon yang akan ditampilkan
- * @param className - Class CSS tambahan
- * @param disabled - Apakah input dinonaktifkan
- * @param required - Apakah input wajib diisi
- * @returns Elemen input floating
- */
-function FloatingInput({
-  label,
-  value,
-  onChange,
-  type = "text",
-  placeholder,
-  icon,
-  className = "",
-  disabled = false,
-  required,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-  placeholder?: string;
-  icon?: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
-  required?: boolean;
-}) {
-  return (
-    <label className={`relative block ${className}`}>
-      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 opacity-70">
-        {icon}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-        required={required}
-        className="w-full rounded-xl bg-white/5 border border-white/10 pl-9 pr-3 py-3 placeholder:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:opacity-60"
-      />
-      <span className="absolute left-3 -top-2 bg-neutral-950 px-1 text-[10px] uppercase tracking-wider text-neutral-300">
-        {label}
-      </span>
-    </label>
-  );
-}
-
-/**
- * Komponen untuk menampilkan anggota tim inline dengan fungsi tambah/hapus
- * 
- * @param team - Data tim
- * @param allUsers - Daftar semua pengguna
- * @param onAdd - Handler untuk menambah anggota
- * @param onRemove - Handler untuk menghapus anggota
- * @returns Elemen untuk menampilkan dan mengelola anggota tim
- */
-function TeamMembersInline({
-  team,
-  allUsers,
-  onAdd,
-  onRemove,
-}: {
-  team: TeamWithMembers;
-  allUsers: UserRow[];
-  onAdd: (userId: number) => void;
-  onRemove: (teamMemberId: number) => void;
-}) {
-  const [addingUserId, setAddingUserId] = useState<number | "">("");
-  const candidates = allUsers.filter(
-    (u) => !team.members.some((m) => m.user.user_id === u.user_id)
-  );
-
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        {team.members.map((m) => (
-          <span
-            key={m.team_member_id}
-            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs"
-            title={m.user.user_email}
-          >
-            {m.user.user_name}
-            {m.team_member_role === "PM" && (
-              <span className="ml-1 rounded bg-amber-500/20 px-1 text-[10px] text-amber-300">
-                PM
-              </span>
-            )}
-            {m.team_member_role !== "PM" && (
-              <button
-                className="ml-1 rounded bg-red-500/10 px-1 text-[10px] text-red-300 hover:bg-red-500/20"
-                onClick={() => onRemove(m.team_member_id)}
-                title="Hapus"
-              >
-                x
-              </button>
-            )}
-          </span>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <select
-          value={addingUserId === "" ? "" : String(addingUserId)}
-          onChange={(e) =>
-            setAddingUserId(e.target.value ? Number(e.target.value) : "")
-          }
-          className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs"
-        >
-          <option value="">+ anggota</option>
-          {candidates.map((u) => (
-            <option key={u.user_id} value={u.user_id}>
-              {u.user_name}
-            </option>
-          ))}
-        </select>
-        <button
-          className="rounded-lg border border-white/10 bg-white/10 px-2 py-1 text-xs hover:bg-white/15"
-          onClick={() => {
-            if (addingUserId !== "") {
-              onAdd(Number(addingUserId));
-              setAddingUserId("");
-            }
-          }}
-        >
-          Tambah
-        </button>
-      </div>
     </div>
   );
 }

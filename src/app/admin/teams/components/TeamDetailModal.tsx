@@ -388,197 +388,195 @@ const TeamDetailModal = ({
   }, [selectedMemberIds, memberJobRoles, team.members]);
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur">
-      <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-neutral-900 p-6 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-xl font-semibold">
-            Detail Tim: {team.team_name}
-          </h3>
-          <button
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+      <div className="w-full max-w-2xl rounded-lg border border-slate-700 bg-slate-900 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center p-4 border-b border-slate-800">
+          <h2 className="text-lg font-semibold text-white">Detail Tim: {team.team_name}</h2>
+          <button 
             onClick={onClose}
-            className="rounded-lg border border-white/10 p-2 hover:bg-white/10"
+            className="text-slate-400 hover:text-white transition"
           >
-            <X className="size-5" />
+            <X className="h-6 w-6" />
           </button>
         </div>
-
-        {/* PM Section */}
-        <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Shield className="size-5 text-amber-400" />
-            <h4 className="font-medium">Project Manager</h4>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            {users
-              .filter((u) => u.user_system_role === "PM")
-              .map((user) => (
-                <label
-                  key={user.user_id}
-                  className={`flex items-center gap-3 rounded-lg border p-3 ${
-                    selectedPMId === user.user_id
-                      ? "border-amber-500/50 bg-amber-500/10"
-                      : "border-white/10 bg-white/5 hover:bg-white/10"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="pm"
-                    checked={selectedPMId === user.user_id}
-                    onChange={() => setSelectedPMId(user.user_id)}
-                    className="size-4"
-                  />
-                  <div>
-                    <div className="font-medium">{user.user_name}</div>
-                    <div className="text-sm text-neutral-400">
-                      {user.user_email}
-                    </div>
-                  </div>
-                  {currentPM?.user.user_id === user.user_id && (
-                    <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-300">
-                      Saat Ini
-                    </span>
-                  )}
-                </label>
-              ))}
-          </div>
-
-          {currentPM && selectedPMId !== currentPM.user.user_id && (
-            <div className="mt-3 text-sm text-amber-400">
-              * Perubahan PM akan diterapkan saat Anda menyimpan
+        
+        <div className="p-6 space-y-6">
+          {/* PM Section */}
+          <div className="rounded-xl border border-slate-800 bg-slate-800/50 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <Shield className="h-5 w-5 text-amber-400" />
+              <h4 className="font-medium">Project Manager</h4>
             </div>
-          )}
-        </div>
-
-        {/* Members Section */}
-        <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Users className="size-5 text-blue-400" />
-            <h4 className="font-medium">Anggota Tim</h4>
-          </div>
-
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari anggota..."
-              className="w-full rounded-lg border border-white/10 bg-white/5 py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-white/30"
-            />
-          </div>
-
-          {/* Members List */}
-          <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
-            {filteredUsers
-              .filter(
-                (u) =>
-                  u.user_system_role !== "ADMIN" && u.user_id !== selectedPMId
-              ) // Mengecualikan pengguna ADMIN dan PM
-              .map((user) => {
-                const isMember = selectedMemberIds.includes(user.user_id);
-                const isCurrentMember = team.members.some(
-                  (m) =>
-                    m.user.user_id === user.user_id &&
-                    m.team_member_role === "STAFF"
-                );
-
-                return (
-                  <div
+            
+            <div className="space-y-2">
+              {users
+                .filter((u) => u.user_system_role === "PM")
+                .map((user) => (
+                  <label
                     key={user.user_id}
-                    className={`flex flex-col rounded-lg border p-3 ${
-                      isMember
-                        ? "border-white/20 bg-white/10"
-                        : "border-white/10 bg-white/5 hover:bg-white/10"
+                    className={`flex items-center gap-3 rounded-lg border p-3 ${
+                      selectedPMId === user.user_id
+                        ? "border-amber-500/50 bg-amber-500/10"
+                        : "border-slate-700 bg-slate-800 hover:bg-slate-700"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={isMember}
-                        onChange={() => toggleMember(user.user_id)}
-                        className="size-4"
-                      />
-                      <User className="size-5 text-neutral-400" />
-                      <div className="flex-1">
-                        <div className="font-medium">{user.user_name}</div>
-                        <div className="text-sm text-neutral-400">
-                          {user.user_email}
-                        </div>
+                    <input
+                      type="radio"
+                      name="pm"
+                      checked={selectedPMId === user.user_id}
+                      onChange={() => setSelectedPMId(user.user_id)}
+                      className="h-4 w-4 text-amber-500 focus:ring-amber-500"
+                    />
+                    <div>
+                      <div className="font-medium text-white">{user.user_name}</div>
+                      <div className="text-sm text-slate-400">
+                        {user.user_email}
                       </div>
-                      <div className="text-xs rounded bg-white/10 px-2 py-1">
-                        {user.user_system_role}
-                      </div>
-                      {isCurrentMember && (
-                        <span className="rounded bg-blue-500/20 px-2 py-0.5 text-xs text-blue-300">
-                          Saat Ini
-                        </span>
-                      )}
                     </div>
-
-                    {isMember && (
-                      <div className="mt-3 pl-7">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Briefcase className="size-4 text-neutral-400" />
-                          <span className="text-sm font-medium">Job Roles</span>
-                        </div>
-                        {jobRoles.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {jobRoles.map((role) => {
-                              // Memastikan userJobRoles didefinisikan untuk setiap pengguna
-                              const userJobRoles =
-                                memberJobRoles[user.user_id] || [];
-                              return (
-                                <label
-                                  key={`${user.user_id}-${role.job_role_id}`}
-                                  className="flex items-center gap-1 text-sm"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={userJobRoles.includes(
-                                      role.job_role_id
-                                    )}
-                                    onChange={(e) => {
-                                      const newJobRoles = e.target.checked
-                                        ? [
-                                            ...userJobRoles,
-                                            role.job_role_id,
-                                          ]
-                                        : userJobRoles.filter(
-                                            (id) => id !== role.job_role_id
-                                          );
-                                      setMemberJobRolesHandler(
-                                        user.user_id,
-                                        newJobRoles
-                                      );
-                                    }}
-                                    className="size-4"
-                                  />
-                                  <span>{role.job_role_name}</span>
-                                </label>
-                              );
-                            })}
+                    {currentPM?.user.user_id === user.user_id && (
+                      <span className="rounded bg-amber-500/20 px-2 py-0.5 text-xs text-amber-300">
+                        Saat Ini
+                      </span>
+                    )}
+                  </label>
+                ))}
+            </div>
+            
+            {currentPM && selectedPMId !== currentPM.user.user_id && (
+              <div className="mt-3 text-sm text-amber-400">
+                * Perubahan PM akan diterapkan saat Anda menyimpan
+              </div>
+            )}
+          </div>
+          
+          {/* Members Section */}
+          <div className="rounded-xl border border-slate-800 bg-slate-800/50 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-400" />
+              <h4 className="font-medium">Anggota Tim</h4>
+            </div>
+            
+            {/* Search */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari anggota..."
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
+            
+            {/* Members List */}
+            <div className="max-h-60 overflow-y-auto space-y-2">
+              {filteredUsers
+                .filter(
+                  (u) =>
+                    u.user_system_role !== "ADMIN" && u.user_id !== selectedPMId
+                ) // Mengecualikan pengguna ADMIN dan PM
+                .map((user) => {
+                  const isMember = selectedMemberIds.includes(user.user_id);
+                  const isCurrentMember = team.members.some(
+                    (m) =>
+                      m.user.user_id === user.user_id &&
+                      m.team_member_role === "STAFF"
+                  );
+                  
+                  return (
+                    <div
+                      key={user.user_id}
+                      className={`flex flex-col rounded-lg border p-3 ${
+                        isMember
+                          ? "border-slate-600 bg-slate-700"
+                          : "border-slate-700 bg-slate-800 hover:bg-slate-700"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isMember}
+                          onChange={() => toggleMember(user.user_id)}
+                          className="h-4 w-4 rounded border-slate-600 bg-slate-700 text-sky-500 focus:ring-sky-500"
+                        />
+                        <User className="h-5 w-5 text-slate-400" />
+                        <div className="flex-1">
+                          <div className="font-medium text-white">{user.user_name}</div>
+                          <div className="text-sm text-slate-400">
+                            {user.user_email}
                           </div>
-                        ) : (
-                          <p className="text-sm text-neutral-400">
-                            Memuat job roles...
-                          </p>
+                        </div>
+                        <div className="text-xs rounded bg-slate-700 px-2 py-1">
+                          {user.user_system_role}
+                        </div>
+                        {isCurrentMember && (
+                          <span className="rounded bg-blue-500/20 px-2 py-0.5 text-xs text-blue-300">
+                            Saat Ini
+                          </span>
                         )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                      
+                      {isMember && (
+                        <div className="mt-3 pl-7">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Briefcase className="h-4 w-4 text-slate-400" />
+                            <span className="text-sm font-medium">Job Roles</span>
+                          </div>
+                          {jobRoles.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {jobRoles.map((role) => {
+                                // Memastikan userJobRoles didefinisikan untuk setiap pengguna
+                                const userJobRoles =
+                                  memberJobRoles[user.user_id] || [];
+                                return (
+                                  <label
+                                    key={`${user.user_id}-${role.job_role_id}`}
+                                    className="flex items-center gap-1 text-sm"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={userJobRoles.includes(
+                                        role.job_role_id
+                                      )}
+                                      onChange={(e) => {
+                                        const newJobRoles = e.target.checked
+                                          ? [
+                                              ...userJobRoles,
+                                              role.job_role_id,
+                                            ]
+                                          : userJobRoles.filter(
+                                              (id) => id !== role.job_role_id
+                                            );
+                                        setMemberJobRolesHandler(
+                                          user.user_id,
+                                          newJobRoles
+                                        );
+                                      }}
+                                      className="h-4 w-4 rounded border-slate-600 bg-slate-700 text-sky-500 focus:ring-sky-500"
+                                    />
+                                    <span className="text-slate-300">{role.job_role_name}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-slate-400">
+                              Memuat job roles...
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
           </div>
         </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3">
+        
+        <div className="flex justify-end gap-3 p-4 bg-slate-800/50 border-t border-slate-800 rounded-b-lg">
           <button
             onClick={onClose}
-            className="rounded-lg border border-white/10 px-4 py-2 hover:bg-white/10"
+            className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700 transition"
             disabled={saving}
           >
             Batal
@@ -586,9 +584,9 @@ const TeamDetailModal = ({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-white/90 disabled:opacity-70"
+            className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-500 transition disabled:opacity-70"
           >
-            <Save className="size-4" />
+            <Save className="h-4 w-4" />
             {saving ? "Menyimpan..." : "Simpan Perubahan"}
           </button>
         </div>
