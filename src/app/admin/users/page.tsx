@@ -10,16 +10,6 @@ import UsersAdmin from "@/app/admin/users/components/UsersAdmin"; // Updated to 
  * @returns Komponen UsersAdmin dengan data pengguna awal
  */
 export default async function UsersPage() {
-  // Memeriksa autentikasi pengguna
-  const cookieStore = await cookies();
-  const raw = cookieStore.get("sb_user")?.value;
-  const user = raw ? JSON.parse(raw) : null;
-
-  // Jika tidak ada pengguna yang login, arahkan ke halaman login
-  if (!user) redirect("/login");
-  // Jika pengguna bukan admin, arahkan ke halaman utama
-  if (user.role !== "ADMIN") redirect("/");
-
   // Mengambil data pengguna awal dari database
   const sb = supabaseServer();
   const { data: users } = await sb

@@ -23,7 +23,12 @@ export default function Header() {
 
   return (
     <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 flex-shrink-0">
-      <div></div> {/* Spacer kosong untuk menjaga layout */}
+      <Link href="/admin" className="inline-flex items-center text-sm text-slate-300 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Kembali ke Menu Admin
+      </Link>
       <div className="relative" ref={dropdownRef}>
         <button
           id="user-menu-button"
@@ -31,7 +36,7 @@ export default function Header() {
           className="flex items-center space-x-2 p-2 rounded-full hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
-          <span className="hidden sm:inline text-sm font-medium text-slate-300">Admin</span>
+          <span className="hidden sm:inline text-sm font-medium text-slate-300">Admin User</span>
           <svg
             className="hidden sm:inline h-4 w-4 text-slate-400"
             xmlns="http://www.w3.org/2000/svg"
@@ -47,6 +52,12 @@ export default function Header() {
             id="user-menu"
             className="absolute right-0 mt-2 w-48 origin-top-right bg-slate-800 border border-slate-700 rounded-md shadow-lg py-1 focus:outline-none"
           >
+            <Link
+              href="/"
+              className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700"
+            >
+              Profil Anda
+            </Link>
             <Link
               href="/login"
               className="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700"

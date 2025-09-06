@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabaseServer } from "@/lib/supabase-server";
 
 interface JobRole {
@@ -93,11 +92,11 @@ export function JobRolesManagement() {
   };
 
   if (loading) {
-    return <div>Memuat data job roles...</div>;
+    return <div className="text-slate-400">Memuat data job roles...</div>;
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return <div className="text-red-400 text-sm">{error}</div>;
   }
 
   return (
@@ -108,29 +107,33 @@ export function JobRolesManagement() {
           onChange={(e) => setNewJobRole(e.target.value)}
           placeholder="Nama job role baru"
           onKeyDown={(e) => e.key === "Enter" && handleAddJobRole()}
+          className="flex-grow px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
         />
-        <Button onClick={handleAddJobRole}>Tambah</Button>
+        <Button 
+          onClick={handleAddJobRole}
+          className="inline-flex items-center justify-center bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-500 transition-all text-sm"
+        >
+          Tambah
+        </Button>
       </div>
 
       {jobRoles.length === 0 ? (
-        <p className="text-gray-500">Belum ada job roles.</p>
+        <p className="text-slate-400 text-sm">Belum ada job roles.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pt-2">
           {jobRoles.map((role) => (
-            <Card key={role.job_role_id}>
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>{role.job_role_name}</span>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteJobRole(role.job_role_id)}
-                  >
-                    Hapus
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-            </Card>
+            <div 
+              key={role.job_role_id} 
+              className="flex items-center justify-between bg-slate-700/50 p-3 rounded-md"
+            >
+              <span className="font-medium text-sm text-white">{role.job_role_name}</span>
+              <button
+                onClick={() => handleDeleteJobRole(role.job_role_id)}
+                className="text-xs text-red-400 hover:text-red-300"
+              >
+                Hapus
+              </button>
+            </div>
           ))}
         </div>
       )}

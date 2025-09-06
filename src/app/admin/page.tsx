@@ -2,8 +2,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import { differenceInDays } from "date-fns";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
 import StatCard from "./components/StatCard";
 import OverdueTasksSection from "./components/OverdueTasksSection";
 import DueSoonTasksSection from "./components/DueSoonTasksSection";
@@ -151,29 +149,23 @@ export default async function AdminDashboardPage() {
   const dueSoonTasksCount = transformedDueSoonTasks.length;
 
   return (
-    <div className="flex h-screen bg-slate-900">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-950 p-6 space-y-6">
-          {/* Stat Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard title="Total Proyek" value={totalProjects || 0} />
-            <StatCard title="Total Tugas" value={totalTasks || 0} />
-            <StatCard title="Tugas Terlambat" value={overdueTasksCount || 0} isOverdue={true} />
-            <StatCard title="Jatuh Tempo 7 Hari" value={dueSoonTasksCount || 0} />
-          </div>
-
-          {/* Tugas Terlambat */}
-          <OverdueTasksSection tasks={transformedOverdueTasks} />
-
-          {/* Tugas yang Akan Jatuh Tempo */}
-          <DueSoonTasksSection tasks={transformedDueSoonTasks} />
-
-          {/* Progress Proyek */}
-          <ProjectProgressSection projects={transformedProjects} />
-        </main>
+    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-950 p-6 space-y-6">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Proyek" value={totalProjects || 0} />
+        <StatCard title="Total Tugas" value={totalTasks || 0} />
+        <StatCard title="Tugas Terlambat" value={overdueTasksCount || 0} isOverdue={true} />
+        <StatCard title="Jatuh Tempo 7 Hari" value={dueSoonTasksCount || 0} />
       </div>
-    </div>
+
+      {/* Tugas Terlambat */}
+      <OverdueTasksSection tasks={transformedOverdueTasks} />
+
+      {/* Tugas yang Akan Jatuh Tempo */}
+      <DueSoonTasksSection tasks={transformedDueSoonTasks} />
+
+      {/* Progress Proyek */}
+      <ProjectProgressSection projects={transformedProjects} />
+    </main>
   );
 }
