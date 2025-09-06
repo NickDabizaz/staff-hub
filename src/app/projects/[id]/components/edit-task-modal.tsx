@@ -30,9 +30,9 @@ interface EditTaskModalProps {
 }
 
 const priorityOptions = [
-  { value: "LOW", label: "Low" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HIGH", label: "High" },
+  { value: "LOW", label: "Rendah" },
+  { value: "MEDIUM", label: "Sedang" },
+  { value: "HIGH", label: "Tinggi" },
   { value: "URGENT", label: "Urgent" },
 ];
 
@@ -93,41 +93,43 @@ export function EditTaskModal({ task, open, onOpenChange, onUpdateTask }: EditTa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-700">
         <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
+          <DialogTitle className="text-white">Edit Tugas</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title" className="text-slate-300">Judul</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              className="bg-slate-800 border-slate-700 text-white"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-slate-300">Deskripsi</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              className="bg-slate-800 border-slate-700 text-white"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status" className="text-slate-300">Status</Label>
               <Select value={status} onValueChange={(value) => setStatus(value as Task["task_status"])}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-700">
                   {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem key={option.value} value={option.value} className="text-white">
                       {option.label}
                     </SelectItem>
                   ))}
@@ -136,14 +138,14 @@ export function EditTaskModal({ task, open, onOpenChange, onUpdateTask }: EditTa
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority" className="text-slate-300">Prioritas</Label>
               <Select value={priority} onValueChange={(value) => setPriority(value as Task["task_priority"])}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-700">
                   {priorityOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem key={option.value} value={option.value} className="text-white">
                       {option.label}
                     </SelectItem>
                   ))}
@@ -153,12 +155,12 @@ export function EditTaskModal({ task, open, onOpenChange, onUpdateTask }: EditTa
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
+            <Label htmlFor="dueDate" className="text-slate-300">Tenggat Waktu</Label>
             <DatePicker date={dueDate} onDateChange={setDueDate} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="progress">Progress (%)</Label>
+            <Label htmlFor="progress" className="text-slate-300">Progress (%)</Label>
             <Input
               id="progress"
               type="number"
@@ -166,22 +168,24 @@ export function EditTaskModal({ task, open, onOpenChange, onUpdateTask }: EditTa
               max="100"
               value={progress}
               onChange={(e) => setProgress(Number(e.target.value))}
+              className="bg-slate-800 border-slate-700 text-white"
             />
           </div>
 
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+          {error && <div className="text-red-400 text-sm">{error}</div>}
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 bg-slate-800/50 border-t border-slate-800 rounded-b-lg p-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
+              className="text-slate-300 bg-transparent hover:bg-slate-700"
             >
-              Cancel
+              Batal
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save Changes"}
+            <Button type="submit" disabled={loading} className="bg-sky-600 hover:bg-sky-500">
+              {loading ? "Menyimpan..." : "Simpan Perubahan"}
             </Button>
           </div>
         </form>

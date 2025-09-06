@@ -4,6 +4,7 @@ import { supabaseServer } from "@/lib/supabase-server";
 import Link from "next/link";
 import { KanbanProvider } from "./components/kanban-context";
 import { KanbanBoard } from "./components/kanban-board";
+import Navbar from "@/components/Navbar";
 
 /**
  * Halaman detail proyek untuk pengguna reguler
@@ -47,70 +48,54 @@ export default async function ProjectDetail({
   // Jika terjadi error atau proyek tidak ditemukan, tampilkan pesan error
   if (error || !project) {
     return (
-      <main className="p-6 space-y-6">
-        <header className="flex items-center justify-between">
-          <div>
-            <Link href="/" className="text-sm text-blue-400 hover:underline">
-              ← Kembali ke Dashboard
-            </Link>
-            <h1 className="text-2xl font-semibold mt-2">Project Tidak Ditemukan</h1>
+      <>
+        <Navbar user={currentUser} />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <Link href="/" className="inline-flex items-center text-sm text-sky-400 hover:text-sky-300 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali ke Dashboard
+              </Link>
+              <h1 className="text-3xl font-bold text-white">Project Tidak Ditemukan</h1>
+            </div>
+          </header>
+          
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium text-white/80">Project tidak ditemukan</h3>
+            <p className="mt-2 text-white/60">Project dengan ID {id} tidak ditemukan.</p>
           </div>
-          <nav className="space-x-3 text-sm">
-            <a href="/logout" className="underline">
-              Logout
-            </a>
-          </nav>
-        </header>
-        
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-white/80">Project tidak ditemukan</h3>
-          <p className="mt-2 text-white/60">Project dengan ID {id} tidak ditemukan.</p>
-        </div>
-      </main>
+        </main>
+      </>
     );
   }
 
   return (
     <KanbanProvider>
-      <main className="p-6 space-y-6">
-        <header className="flex items-center justify-between">
-          <div>
-            <Link href="/" className="text-sm text-blue-400 hover:underline">
-              ← Kembali ke Dashboard
-            </Link>
-            <h1 className="text-2xl font-semibold mt-2">{project.project_name}</h1>
-          </div>
-          <nav className="space-x-3 text-sm">
-            <a href="/logout" className="underline">
-              Logout
-            </a>
-          </nav>
-        </header>
-
-        <section className="border border-white/10 rounded-2xl p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      <>
+        <Navbar user={currentUser} />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-semibold">{project.project_name}</h2>
-              <p className="mt-2 text-white/60">{project.project_description || 'Tidak ada deskripsi'}</p>
+              <Link href="/" className="inline-flex items-center text-sm text-sky-400 hover:text-sky-300 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali ke Dashboard
+              </Link>
+              <h1 className="text-3xl font-bold text-white">{project.project_name}</h1>
+              <p className="mt-1 text-slate-400">{project.project_description || 'Tidak ada deskripsi'}</p>
             </div>
-            <span className="inline-flex items-center rounded-full bg-blue-400/10 px-3 py-1 text-xs font-medium text-blue-400">
-              Active
-            </span>
-          </div>
+          </header>
 
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-white/60">Tanggal Deadline</h3>
-              <p className="mt-1">{project.project_deadline || 'Tidak ditentukan'}</p>
-            </div>
-          </div>
-        </section>
-
-        <KanbanBoard 
-          projectId={project.project_id} 
-          currentUser={currentUser} 
-        />
-      </main>
+          <KanbanBoard 
+            projectId={project.project_id} 
+            currentUser={currentUser} 
+          />
+        </main>
+      </>
     </KanbanProvider>
   );
 }

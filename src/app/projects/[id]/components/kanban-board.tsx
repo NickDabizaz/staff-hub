@@ -7,15 +7,17 @@ import { TaskCard } from "./task-card";
 import { QuickAddTask } from "./quick-add-task";
 import { useKanban } from "./kanban-context";
 import { TaskFilters } from "./task-filters";
+import { Search, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 /**
  * Konfigurasi kolom status untuk board Kanban
  * Mendefinisikan struktur dan warna untuk setiap kolom status
  */
 const statusColumns: { id: Task["task_status"]; title: string; color: string }[] = [
-  { id: "TODO", title: "To Do", color: "bg-gray-500" },
-  { id: "IN_PROGRESS", title: "In Progress", color: "bg-blue-500" },
-  { id: "DONE", title: "Done", color: "bg-green-500" },
+  { id: "TODO", title: "To Do", color: "bg-sky-400" },
+  { id: "IN_PROGRESS", title: "In Progress", color: "bg-yellow-400" },
+  { id: "DONE", title: "Done", color: "bg-green-400" },
   { id: "BLOCKED", title: "Blocked", color: "bg-red-500" },
 ];
 
@@ -30,6 +32,8 @@ const statusColumns: { id: Task["task_status"]; title: string; color: string }[]
 export function KanbanBoard({ projectId, currentUser }: { projectId: number; currentUser: any }) {
   const { state, moveTask, fetchTasks } = useKanban();
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     search: "",
     status: "ALL" as Task["task_status"] | "ALL",
@@ -108,28 +112,54 @@ export function KanbanBoard({ projectId, currentUser }: { projectId: number; cur
 
   // Menampilkan indikator loading atau pesan error jika diperlukan
   if (state.loading) {
-    return <div>Loading tasks...</div>;
+    return <div className="text-slate-400">Memuat tugas...</div>;
   }
 
   if (state.error) {
-    return <div className="text-red-500">Error: {state.error}</div>;
+    return <div className="text-red-400 text-sm">Error: {state.error}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Project Tasks</h2>
+      {/* Controls: Search & Filters */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+          <Input
+            type="text"
+            placeholder="Cari tugas..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              handleFilterChange({ ...filters, search: e.target.value });
+            }}
+          />
+        </div>
+        <Button 
+          variant="outline" 
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <Filter className="h-4 w-4" />
+          Filter
+        </Button>
         {canAddTasks && (
-          <Button onClick={() => {
-            console.log("Current user role:", currentUser?.role);
-            setShowQuickAdd(true);
-          }}>
-            Add Task
+          <Button 
+            onClick={() => setShowQuickAdd(true)}
+            className="w-full sm:w-auto inline-flex items-center justify-center bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-sky-500 transition-all duration-300"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Tugas
           </Button>
         )}
       </div>
 
-      <TaskFilters onFilterChange={handleFilterChange} />
+      {showFilters && (
+        <TaskFilters onFilterChange={handleFilterChange} />
+      )}
 
       {showQuickAdd && (
         <QuickAddTask 
@@ -138,25 +168,25 @@ export function KanbanBoard({ projectId, currentUser }: { projectId: number; cur
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Kanban Board */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
         {tasksByStatus.map((column) => (
           <div
             key={column.id}
-            className="space-y-4"
+            className="kanban-column bg-slate-900/50 rounded-lg p-4"
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, column.id)}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className={`w-3 h-3 rounded-full ${column.color} mr-2`}></div>
-                <h3 className="font-semibold">{column.title}</h3>
-                <span className="ml-2 bg-gray-700 text-xs px-2 py-1 rounded-full">
-                  {column.tasks.length}
-                </span>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${column.color}`}></span>
+                <h3 className="font-semibold text-white">{column.title}</h3>
               </div>
+              <span className="text-sm font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">
+                {column.tasks.length}
+              </span>
             </div>
-            
-            <div className="space-y-3 min-h-[100px]">
+            <div className="space-y-4">
               {column.tasks.map((task) => (
                 <TaskCard 
                   key={task.task_id} 
@@ -167,8 +197,8 @@ export function KanbanBoard({ projectId, currentUser }: { projectId: number; cur
               ))}
               
               {column.tasks.length === 0 && (
-                <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
-                  No tasks
+                <div className="space-y-4 text-center py-10 border-2 border-dashed border-slate-800 rounded-lg">
+                  <p className="text-sm text-slate-500">Tidak ada tugas.</p>
                 </div>
               )}
             </div>

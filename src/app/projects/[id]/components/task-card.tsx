@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Task } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
@@ -24,10 +23,10 @@ import { useKanban } from "./kanban-context";
 import { EditTaskModal } from "./edit-task-modal";
 
 const priorityColors = {
-  LOW: "bg-green-500",
-  MEDIUM: "bg-yellow-500",
-  HIGH: "bg-orange-500",
-  URGENT: "bg-red-500",
+  LOW: "bg-green-500/10 text-green-400 ring-1 ring-inset ring-green-500/20",
+  MEDIUM: "bg-amber-500/10 text-amber-400 ring-1 ring-inset ring-amber-500/20",
+  HIGH: "bg-orange-500/10 text-orange-400 ring-1 ring-inset ring-orange-500/20",
+  URGENT: "bg-rose-500/10 text-rose-400 ring-1 ring-inset ring-rose-500/20",
 };
 
 export function TaskCard({ 
@@ -90,114 +89,139 @@ export function TaskCard({
 
   return (
     <>
-      <Card 
-        className={`hover:shadow-md transition-shadow ${canInteractWithTask ? 'cursor-move' : 'cursor-not-allowed opacity-75'}`}
+      <div 
+        className={`bg-slate-800 border border-slate-700 rounded-lg p-4 cursor-pointer hover:border-sky-500 transition group ${canInteractWithTask ? 'cursor-move' : 'cursor-not-allowed opacity-75'}`}
         draggable={canInteractWithTask}
         onDragStart={(e) => canInteractWithTask && onDragStart(e, task.task_id)}
+        onClick={() => setShowDetails(true)}
       >
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-start">
-            <CardTitle className="text-lg">{task.task_title}</CardTitle>
-            <div className="flex space-x-1">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>{task.task_title}</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    {task.task_description && (
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <span className="text-sm text-muted-foreground">Description</span>
-                        <span className="col-span-3 text-sm">{task.task_description}</span>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <span className="text-sm text-muted-foreground">Status</span>
-                      <span className="col-span-3">
-                        <Badge variant="outline">{task.task_status}</Badge>
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <span className="text-sm text-muted-foreground">Priority</span>
-                      <span className="col-span-3">
-                        <Badge className={`${priorityColors[task.task_priority]} text-white`}>
-                          {task.task_priority}
-                        </Badge>
-                      </span>
-                    </div>
-                    {task.task_due_date && (
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <span className="text-sm text-muted-foreground">Due Date</span>
-                        <span className="col-span-3 text-sm">
-                          {new Date(task.task_due_date).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <span className="text-sm text-muted-foreground">Progress</span>
-                      <span className="col-span-3 text-sm">{task.task_progress}%</span>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              {canInteractWithTask && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setShowEditModal(true)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      <span>Edit</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleDelete}>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Delete</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {task.task_description && (
-            <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-              {task.task_description}
-            </p>
-          )}
+        <div className="flex justify-between items-start mb-2">
+          <h4 className="font-semibold text-slate-100 group-hover:text-sky-400">{task.task_title}</h4>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-slate-500 hover:text-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                setShowDetails(true);
+              }}>
+                <Eye className="mr-2 h-4 w-4" />
+                <span>Lihat Detail</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                setShowEditModal(true);
+              }}>
+                <Pencil className="mr-2 h-4 w-4" />
+                <span>Edit</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Hapus</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        
+        {task.task_description && (
+          <p className="text-sm text-slate-400 mb-4 line-clamp-2">
+            {task.task_description}
+          </p>
+        )}
+        
+        <div className="flex justify-between items-center">
+          <Badge 
+            className={priorityColors[task.task_priority]}
+          >
+            {task.task_priority === "LOW" && "Rendah"}
+            {task.task_priority === "MEDIUM" && "Sedang"}
+            {task.task_priority === "HIGH" && "Tinggi"}
+            {task.task_priority === "URGENT" && "Urgent"}
+          </Badge>
           
-          <div className="flex justify-between items-center">
-            <Badge 
-              className={`${priorityColors[task.task_priority]} text-white`}
-            >
-              {task.task_priority}
-            </Badge>
-            
+          <div className="flex items-center gap-2">
             {task.task_due_date && (
-              <span className="text-xs text-gray-500">
-                {new Date(task.task_due_date).toLocaleDateString()}
+              <span className="text-xs text-slate-400">
+                {new Date(task.task_due_date).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short'
+                })}
               </span>
             )}
-          </div>
-          
-          {task.assignee_user_id && (
-            <div className="mt-3 flex items-center">
-              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white">
+            {task.assignee_user_id && (
+              <div className="h-6 w-6 rounded-full bg-sky-500 flex items-center justify-center text-xs text-white">
                 U
               </div>
-              <span className="ml-2 text-sm">User {task.assignee_user_id}</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Task Details Modal */}
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">{task.task_title}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {task.task_description && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm text-slate-400">Deskripsi</span>
+                <span className="col-span-3 text-sm text-slate-300">{task.task_description}</span>
+              </div>
+            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <span className="text-sm text-slate-400">Status</span>
+              <span className="col-span-3">
+                <Badge variant="outline" className="text-slate-300 border-slate-600">
+                  {task.task_status === "TODO" && "To Do"}
+                  {task.task_status === "IN_PROGRESS" && "In Progress"}
+                  {task.task_status === "DONE" && "Done"}
+                  {task.task_status === "BLOCKED" && "Blocked"}
+                </Badge>
+              </span>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <span className="text-sm text-slate-400">Prioritas</span>
+              <span className="col-span-3">
+                <Badge className={priorityColors[task.task_priority]}>
+                  {task.task_priority === "LOW" && "Rendah"}
+                  {task.task_priority === "MEDIUM" && "Sedang"}
+                  {task.task_priority === "HIGH" && "Tinggi"}
+                  {task.task_priority === "URGENT" && "Urgent"}
+                </Badge>
+              </span>
+            </div>
+            {task.task_due_date && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <span className="text-sm text-slate-400">Tenggat Waktu</span>
+                <span className="col-span-3 text-sm text-slate-300">
+                  {new Date(task.task_due_date).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <span className="text-sm text-slate-400">Progress</span>
+              <span className="col-span-3 text-sm text-slate-300">{task.task_progress}%</span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <EditTaskModal
         task={task}

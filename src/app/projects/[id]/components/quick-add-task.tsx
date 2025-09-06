@@ -35,6 +35,8 @@ export function QuickAddTask({
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [priority, setPriority] = useState<Task["task_priority"]>("MEDIUM");
+  const [status, setStatus] = useState<Task["task_status"]>("TODO");
+  const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,10 +54,10 @@ export function QuickAddTask({
         assignee_user_id: null,
         task_title: title,
         task_description: description,
-        task_status: "TODO",
+        task_status: status,
         task_priority: priority,
         task_due_date: dueDate ? dueDate.toISOString().split('T')[0] : null,
-        task_progress: 0,
+        task_progress: progress,
       });
       
       // Reset form
@@ -63,6 +65,8 @@ export function QuickAddTask({
       setDescription("");
       setDueDate(undefined);
       setPriority("MEDIUM");
+      setStatus("TODO");
+      setProgress(0);
       onClose();
     } catch (error) {
       console.error("Failed to add task:", error);
@@ -73,81 +77,109 @@ export function QuickAddTask({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-700">
         <DialogHeader>
-          <DialogTitle>Quick Add Task</DialogTitle>
+          <DialogTitle className="text-white">Tambah Tugas Baru</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                Title
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-slate-300">
+                Judul
               </Label>
-              <div className="col-span-3">
-                <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Task title"
-                  className="w-full"
-                  required
-                />
-              </div>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Design the login page"
+                className="w-full bg-slate-800 border-slate-700 text-white"
+                required
+              />
             </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-slate-300">
+                Deskripsi
               </Label>
-              <div className="col-span-3">
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Task description"
-                  className="w-full"
-                />
-              </div>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Tambahkan deskripsi singkat..."
+                className="w-full bg-slate-800 border-slate-700 text-white"
+              />
             </div>
             
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="dueDate" className="text-right">
-                Due Date
-              </Label>
-              <div className="col-span-3">
-                <DatePicker 
-                  date={dueDate} 
-                  onDateChange={setDueDate} 
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="priority" className="text-right">
-                Priority
-              </Label>
-              <div className="col-span-3">
-                <Select value={priority} onValueChange={(value) => setPriority(value as Task["task_priority"])}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select priority" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-slate-300">
+                  Status
+                </Label>
+                <Select value={status} onValueChange={(value) => setStatus(value as Task["task_status"])}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue placeholder="Pilih status" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LOW">Low</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="TODO">To Do</SelectItem>
+                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                    <SelectItem value="DONE">Done</SelectItem>
+                    <SelectItem value="BLOCKED">Blocked</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="priority" className="text-slate-300">
+                  Prioritas
+                </Label>
+                <Select value={priority} onValueChange={(value) => setPriority(value as Task["task_priority"])}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue placeholder="Pilih prioritas" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="LOW">Rendah</SelectItem>
+                    <SelectItem value="MEDIUM">Sedang</SelectItem>
+                    <SelectItem value="HIGH">Tinggi</SelectItem>
                     <SelectItem value="URGENT">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dueDate" className="text-slate-300">
+                  Tenggat Waktu
+                </Label>
+                <DatePicker 
+                  date={dueDate} 
+                  onDateChange={setDueDate} 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="progress" className="text-slate-300">
+                  Progress (%)
+                </Label>
+                <Input
+                  id="progress"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={progress}
+                  onChange={(e) => setProgress(Number(e.target.value))}
+                  className="bg-slate-800 border-slate-700 text-white"
+                />
+              </div>
+            </div>
           </div>
           
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+          <DialogFooter className="bg-slate-800/50 border-t border-slate-800 rounded-b-lg">
+            <Button type="button" variant="outline" onClick={onClose} className="text-slate-300 bg-transparent hover:bg-slate-700">
+              Batal
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Adding..." : "Add Task"}
+            <Button type="submit" disabled={isLoading} className="bg-sky-600 hover:bg-sky-500">
+              {isLoading ? "Menambahkan..." : "Buat Tugas"}
             </Button>
           </DialogFooter>
         </form>
