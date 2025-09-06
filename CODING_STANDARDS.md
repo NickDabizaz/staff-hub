@@ -1,29 +1,29 @@
 # Staff Hub Coding Standards
 
-This document outlines the coding standards and best practices for the Staff Hub project. All contributors should follow these guidelines to maintain code quality and consistency.
+Dokumen ini berisi standar coding dan best practices untuk project Staff Hub. Semua kontributor harus mengikuti panduan ini untuk menjaga kualitas dan konsistensi kode.
 
-## Table of Contents
+## Daftar Isi
 
-1. [Project Overview](#project-overview)
+1. [Overview Project](#overview-project)
 2. [Technology Stack](#technology-stack)
-3. [Code Organization](#code-organization)
-4. [Naming Conventions](#naming-conventions)
-5. [Component Development](#component-development)
-6. [TypeScript Guidelines](#typescript-guidelines)
+3. [Organisasi Kode](#organisasi-kode)
+4. [Konvensi Penamaan](#konvensi-penamaan)
+5. [Pengembangan Komponen](#pengembangan-komponen)
+6. [Panduan TypeScript](#panduan-typescript)
 7. [Styling](#styling)
 8. [Testing](#testing)
 9. [Git Workflow](#git-workflow)
-10. [Performance Considerations](#performance-considerations)
-11. [Security Practices](#security-practices)
+10. [Pertimbangan Performance](#pertimbangan-performance)
+11. [Praktik Keamanan](#praktik-keamanan)
 
-## Project Overview
+## Overview Project
 
-Staff Hub is a Next.js 15 application built with TypeScript, React 19, Tailwind CSS, and Supabase. It serves as a task management platform for staff members.
+Staff Hub adalah aplikasi Next.js 15 yang dibangun dengan TypeScript, React 19, Tailwind CSS, dan Supabase. Aplikasi ini berfungsi sebagai platform manajemen tugas untuk anggota staff dengan dua role utama: user biasa dan admin.
 
 ## Technology Stack
 
 - **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
+- **Bahasa**: TypeScript
 - **UI Library**: React 19
 - **Styling**: Tailwind CSS
 - **State Management**: React Context API
@@ -31,88 +31,94 @@ Staff Hub is a Next.js 15 application built with TypeScript, React 19, Tailwind 
 - **UI Components**: Radix UI, Lucide React Icons
 - **Form Validation**: Zod
 - **Date Handling**: date-fns
-- **Linting**: ESLint with Next.js Core Web Vitals
+- **Linting**: ESLint dengan Next.js Core Web Vitals
+- **Notifications**: SweetAlert2
 
-## Code Organization
+## Organisasi Kode
 
 ```
 src/
 ├── app/                    # Next.js app router pages
-│   ├── admin/             # Admin-specific pages
-│   ├── login/             # Authentication pages
-│   ├── logout/            # Logout functionality
-│   ├── projects/          # Project-related pages
+│   ├── admin/             # Halaman khusus admin
+│   │   ├── dashboard/     # Dashboard admin
+│   │   ├── users/         # Manajemen users
+│   │   ├── teams/         # Manajemen teams
+│   │   ├── projects/      # Manajemen projects
+│   │   └── settings/      # Pengaturan sistem
+│   ├── login/             # Halaman autentikasi
+│   ├── logout/            # Fungsi logout
+│   ├── projects/         # Halaman project user
 │   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── components/            # Shared components
-│   ├── ui/                # Reusable UI components
-│   ├── user/              # User-related components
-│   └── Navbar.tsx         # Navigation component
-├── lib/                   # Utility functions and helpers
-└── types/                 # TypeScript type definitions
+│   └── page.tsx           # Home page (dashboard user)
+├── components/            # Komponen shared
+│   ├── ui/                # Komponen UI yang dapat digunakan ulang
+│   ├── user/              # Komponen khusus user
+│   └── Navbar.tsx         # Komponen navigasi
+├── lib/                   # Fungsi utility dan helpers
+└── types.ts               # Definisi tipe TypeScript
 ```
 
-### File Naming Conventions
+### Konvensi Penamaan File
 
-- Use `PascalCase` for component files (e.g., `Button.tsx`, `UserCard.tsx`)
-- Use `camelCase` for utility files (e.g., `apiClient.ts`, `dateHelpers.ts`)
-- Use `kebab-case` for CSS files (e.g., `global.css`, `dashboard-layout.css`)
+- Gunakan `PascalCase` untuk file komponen (e.g., `Button.tsx`, `UserCard.tsx`)
+- Gunakan `camelCase` untuk file utility (e.g., `apiClient.ts`, `dateHelpers.ts`)
+- Gunakan `kebab-case` untuk file CSS (e.g., `global.css`, `dashboard-layout.css`)
 
-## Naming Conventions
+## Konvensi Penamaan
 
-### Variables and Functions
+### Variabel dan Fungsi
 
-- Use `camelCase` for variables and functions
-- Use descriptive names that clearly indicate the purpose
-- Boolean variables should be prefixed with `is`, `has`, `can`, etc.
+- Gunakan `camelCase` untuk variabel dan fungsi
+- Gunakan nama yang deskriptif dan jelas menunjukkan tujuan
+- Variabel boolean harus diawali dengan `is`, `has`, `can`, dll.
 
 ```typescript
-// Good
+// Baik
 const isLoading = true;
 const hasPermission = false;
 const userList = [];
 
-// Avoid
+// Hindari
 const loading = true;
 const perm = false;
 const list = [];
 ```
 
-### Components
+### Komponen
 
-- Use `PascalCase` for component names
-- Component names should be descriptive and specific
-- Use JSX components for UI elements
+- Gunakan `PascalCase` untuk nama komponen
+- Nama komponen harus deskriptif dan spesifik
+- Gunakan komponen JSX untuk elemen UI
 
 ```typescript
-// Good
+// Baik
 function UserCard() { ... }
 function ProjectList() { ... }
 
-// Avoid
+// Hindari
 function Card() { ... }
 function List() { ... }
 ```
 
-### Constants
+### Konstanta
 
-- Use `UPPER_SNAKE_CASE` for constants
+- Gunakan `UPPER_SNAKE_CASE` untuk konstanta
 
 ```typescript
 const MAX_RETRY_ATTEMPTS = 3;
 const API_BASE_URL = 'https://api.example.com';
 ```
 
-## Component Development
+## Pengembangan Komponen
 
-### Component Structure
+### Struktur Komponen
 
-Components should follow this structure:
+Komponen harus mengikuti struktur berikut:
 
 1. Imports
-2. Type definitions
-3. Main component function
-4. Export statement
+2. Definisi tipe
+3. Fungsi komponen utama
+4. Statement export
 
 ```tsx
 import React from 'react';
@@ -139,29 +145,29 @@ export function UserCard({ name, email, isActive }: UserCardProps) {
 
 ### Props
 
-- Always define prop types using TypeScript interfaces
-- Use optional props with default values when appropriate
-- Destructure props in the function parameters
+- Selalu definisikan tipe props menggunakan interface TypeScript
+- Gunakan optional props dengan default values jika sesuai
+- Destructure props dalam parameter fungsi
 
-### Component Best Practices
+### Best Practices Komponen
 
-- Keep components small and focused on a single responsibility
-- Prefer functional components over class components
-- Use React hooks for state and side effects
-- Extract complex logic into custom hooks when needed
-- Avoid inline functions in render; define them outside or use `useCallback`
+- Jaga komponen tetap kecil dan fokus pada satu tanggung jawab
+- Lebih suka functional components daripada class components
+- Gunakan React hooks untuk state dan side effects
+- Ekstrak logika kompleks ke custom hooks jika diperlukan
+- Hindari inline functions dalam render; definisikan di luar atau gunakan `useCallback`
 
-## TypeScript Guidelines
+## Panduan TypeScript
 
-### Type Definitions
+### Definisi Tipe
 
-- Define types in the same file when they're only used in that file
-- Create shared type files in `src/types/` for types used across multiple files
-- Use interfaces for object shapes and types for unions/primitives
-- Use `type` for complex types, unions, and intersections
+- Definisikan tipe dalam file yang sama jika hanya digunakan di file tersebut
+- Buat file tipe shared di `src/types.ts` untuk tipe yang digunakan di beberapa file
+- Gunakan interface untuk bentuk objek dan type untuk unions/primitives
+- Gunakan `type` untuk tipe kompleks, unions, dan intersections
 
 ```typescript
-// Good
+// Baik
 interface User {
   id: string;
   name: string;
@@ -170,7 +176,7 @@ interface User {
 
 type Status = 'pending' | 'approved' | 'rejected';
 
-// Avoid
+// Hindari
 type User = {
   id: string;
   name: string;
@@ -180,14 +186,14 @@ type User = {
 
 ### Strict Typing
 
-- Enable strict mode in TypeScript (`strict: true` in `tsconfig.json`)
-- Avoid using `any` type; use `unknown` instead when the type is truly unknown
-- Use generics when creating reusable functions/components
+- Aktifkan strict mode di TypeScript (`strict: true` di `tsconfig.json`)
+- Hindari menggunakan tipe `any`; gunakan `unknown` jika tipe benar-benar tidak diketahui
+- Gunakan generics saat membuat fungsi/komponen yang dapat digunakan ulang
 
-### Optional Properties
+### Properti Optional
 
-- Use `?` for optional properties
-- Provide default values for optional props in components
+- Gunakan `?` untuk properti optional
+- Berikan default values untuk optional props dalam komponen
 
 ```typescript
 interface ButtonProps {
@@ -209,9 +215,9 @@ export function Button({
 
 ### Tailwind CSS
 
-- Use Tailwind utility classes for styling
-- Prefer utility classes over custom CSS when possible
-- Use `clsx` or `tailwind-merge` for conditional classes
+- Gunakan utility classes Tailwind untuk styling
+- Lebih suka utility classes daripada custom CSS jika memungkinkan
+- Gunakan `clsx` atau `tailwind-merge` untuk conditional classes
 
 ```tsx
 import clsx from 'clsx';
@@ -232,107 +238,134 @@ function Button({ variant, className }: ButtonProps) {
 }
 ```
 
+### Design System Staff Hub
+
+#### Color Palette
+- **Primary**: `sky-500` (untuk buttons dan accents)
+- **Background**: `slate-950` (main background)
+- **Cards**: `slate-800/50` dengan border `slate-800`
+- **Text Primary**: `white`
+- **Text Secondary**: `slate-400`
+- **Text Muted**: `slate-500`
+
+#### Typography
+- **Font Family**: Inter (Google Fonts)
+- **Headings**: `font-bold`
+- **Body**: `font-medium` atau `font-normal`
+- **Small text**: `text-sm` atau `text-xs`
+
+#### Spacing & Layout
+- **Container padding**: `p-6`
+- **Card padding**: `p-4` atau `p-6`
+- **Gap between elements**: `space-y-6` atau `gap-6`
+- **Border radius**: `rounded-lg`
+
+#### Interactive Elements
+- **Hover states**: `hover:bg-slate-800`, `hover:text-sky-400`
+- **Focus states**: `focus:ring-2 focus:ring-sky-500`
+- **Transitions**: `transition-all duration-300`
+
 ### Custom CSS
 
-- When utility classes aren't sufficient, use CSS modules
-- Avoid global CSS except for base styles in `globals.css`
-- Use CSS variables for consistent theming
+- Gunakan CSS modules jika utility classes tidak cukup
+- Hindari global CSS kecuali untuk base styles di `globals.css`
+- Gunakan CSS variables untuk theming yang konsisten
 
 
 
-## Performance Considerations
+## Pertimbangan Performance
 
-### Component Optimization
+### Optimisasi Komponen
 
-- Use `React.memo()` for components that render frequently
-- Implement `useMemo` and `useCallback` for expensive calculations
-- Use dynamic imports for code splitting
+- Gunakan `React.memo()` untuk komponen yang sering di-render
+- Implementasikan `useMemo` dan `useCallback` untuk perhitungan yang mahal
+- Gunakan dynamic imports untuk code splitting
 
 ```tsx
 import dynamic from 'next/dynamic';
 
 const HeavyComponent = dynamic(() => import('@/components/HeavyComponent'));
 
-// In component render
+// Dalam component render
 {showHeavyComponent && <HeavyComponent />}
 ```
 
 ### Data Fetching
 
-- Use Next.js data fetching methods appropriately
-- Implement proper loading states
-- Handle errors gracefully
-- Cache data when appropriate to reduce API calls
+- Gunakan Next.js data fetching methods dengan tepat
+- Implementasikan loading states yang proper
+- Handle errors dengan baik
+- Cache data jika sesuai untuk mengurangi API calls
 
 ### Bundle Optimization
 
-- Analyze bundle size regularly
-- Use code splitting for large dependencies
-- Remove unused dependencies
-- Lazy load components when possible
+- Analisis ukuran bundle secara berkala
+- Gunakan code splitting untuk dependencies yang besar
+- Hapus dependencies yang tidak digunakan
+- Lazy load komponen jika memungkinkan
 
-## Security Practices
+## Praktik Keamanan
 
-### Authentication
+### Autentikasi
 
-- Never store sensitive information in localStorage
-- Use secure, HTTP-only cookies for session management
-- Implement proper authentication checks on both client and server
+- Jangan pernah menyimpan informasi sensitif di localStorage
+- Gunakan secure, HTTP-only cookies untuk session management
+- Implementasikan proper authentication checks di client dan server
 
-### Data Handling
+### Penanganan Data
 
-- Sanitize user inputs to prevent XSS attacks
-- Validate data on both client and server
-- Use parameterized queries to prevent SQL injection
+- Sanitasi user inputs untuk mencegah XSS attacks
+- Validasi data di client dan server
+- Gunakan parameterized queries untuk mencegah SQL injection
 
 ### Environment Variables
 
-- Store secrets in environment variables
-- Prefix client-side variables with `NEXT_PUBLIC_` only when necessary
-- Never commit secrets to version control
+- Simpan secrets di environment variables
+- Prefix client-side variables dengan `NEXT_PUBLIC_` hanya jika diperlukan
+- Jangan pernah commit secrets ke version control
 
 ### Dependencies
 
-- Regularly update dependencies
-- Audit dependencies for security vulnerabilities
-- Use trusted sources for packages
+- Update dependencies secara berkala
+- Audit dependencies untuk security vulnerabilities
+- Gunakan sumber terpercaya untuk packages
 
-## Code Quality Tools
+## Tools Kualitas Kode
 
 ### ESLint
 
-- Run `npm run lint` to check for code issues
-- Fix all ESLint errors before committing
-- Configure project-specific rules in `.eslintrc`
+- Jalankan `npm run lint` untuk mengecek masalah kode
+- Perbaiki semua ESLint errors sebelum commit
+- Konfigurasi project-specific rules di `.eslintrc`
 
 ### TypeScript
 
-- Ensure no TypeScript errors before committing
-- Use strict typing options
-- Regularly update TypeScript version
+- Pastikan tidak ada TypeScript errors sebelum commit
+- Gunakan strict typing options
+- Update TypeScript version secara berkala
 
 ### Formatting
 
-- Use Prettier for code formatting consistency
-- Configure editor to format on save
-- Resolve formatting conflicts with ESLint rules
+- Gunakan Prettier untuk konsistensi formatting kode
+- Konfigurasi editor untuk format on save
+- Resolve formatting conflicts dengan ESLint rules
 
-## Review Process
+## Proses Review
 
-1. All code must be reviewed before merging
-2. Reviewers should check for:
-   - Code quality and readability
-   - Performance considerations
-   - Security implications
-   - Adherence to these standards
-3. Address all review comments before merging
-4. Run all tests locally before requesting review
+1. Semua kode harus di-review sebelum merging
+2. Reviewer harus mengecek:
+   - Kualitas kode dan readability
+   - Pertimbangan performance
+   - Implikasi keamanan
+   - Kepatuhan terhadap standar ini
+3. Address semua review comments sebelum merging
+4. Jalankan semua tests lokal sebelum request review
 
 ## Continuous Improvement
 
-These standards should evolve with the project. When proposing changes:
+Standar ini harus berkembang bersama project. Saat mengusulkan perubahan:
 
-1. Discuss with the team
-2. Update this document
-3. Ensure all team members are aware of changes
-4. Update any linting or formatting tools as needed
+1. Diskusikan dengan tim
+2. Update dokumen ini
+3. Pastikan semua anggota tim aware dengan perubahan
+4. Update linting atau formatting tools jika diperlukan
