@@ -6,6 +6,15 @@ import { Check } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * A checkbox component that allows users to select one or more items from a group.
+ * Built using Radix UI Checkbox primitive with styling.
+ * 
+ * @example
+ * ```tsx
+ * <Checkbox id="terms" />
+ * ```
+ */
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
@@ -18,6 +27,7 @@ const Checkbox = React.forwardRef<
     )}
     {...props}
   >
+    {/* Indicator that shows the checkmark when checkbox is checked */}
     <CheckboxPrimitive.Indicator
       className={cn("flex items-center justify-center text-current")}
     >

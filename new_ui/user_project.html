@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Detail - Staff Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* bg-slate-950 */
+        }
+        .kanban-column {
+            scroll-margin-top: 80px; /* Adjust based on sticky header height */
+        }
+    </style>
+</head>
+<body class="text-slate-200">
+
+    <div id="app-wrapper" class="min-h-screen">
+        <!-- Navigation Bar (Sama seperti di dashboard) -->
+        <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center space-x-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-500"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
+                        <span class="text-xl font-bold text-slate-50">Staff Hub</span>
+                    </div>
+                    <div class="relative">
+                        <button id="user-menu-button" type="button" class="flex items-center space-x-2 p-2 rounded-full hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors">
+                            <span class="hidden sm:inline text-sm font-medium text-slate-300">Project Manager 1</span>
+                            <svg class="hidden sm:inline h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                        </button>
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 origin-top-right bg-slate-800 border border-slate-700 rounded-md shadow-lg py-1 focus:outline-none">
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Profil Anda</a>
+                            <a href="/login" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Page Header -->
+            <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                    <a href="/dashboard.html" class="inline-flex items-center text-sm text-sky-400 hover:text-sky-300 mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                        Kembali ke Dashboard
+                    </a>
+                    <h1 class="text-3xl font-bold text-white">Company Website Redesign</h1>
+                    <p class="mt-1 text-slate-400">Complete redesign of the company website with modern UI/UX principles.</p>
+                </div>
+                <div class="flex-shrink-0">
+                    <button onclick="openAddTaskModal()" class="w-full sm:w-auto inline-flex items-center justify-center bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-sky-500 transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                        Tambah Tugas
+                    </button>
+                </div>
+            </header>
+
+            <!-- Controls: Search & Filters -->
+            <div class="mb-6 flex flex-col sm:flex-row gap-4">
+                <div class="relative flex-grow">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                    <input type="text" placeholder="Cari tugas..." class="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+                </div>
+                <button class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-lg text-sm hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 7.973.697.176.032.34.115.476.23.94.805 1.551 2.022 1.551 3.323v8.5c0 1.301-.611 2.518-1.551 3.323-.136.115-.3.198-.476.23A48.42 48.42 0 0 1 12 21c-2.755 0-5.455-.232-7.973-.697-.176-.032-.34-.115-.476-.23C2.611 19.482 2 18.265 2 16.964v-8.5c0-1.301.611 2.518-1.551 3.323.136-.115-.3-.198-.476-.23A48.42 48.42 0 0 1 12 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18" /></svg>
+                    Filter
+                </button>
+            </div>
+
+            <!-- Kanban Board -->
+            <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+                
+                <!-- Column: To Do -->
+                <div class="kanban-column bg-slate-900/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-sky-400"></span>
+                            <h3 class="font-semibold text-white">To Do</h3>
+                        </div>
+                        <span class="text-sm font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">1</span>
+                    </div>
+                    <div class="space-y-4">
+                        <!-- Task Card -->
+                        <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 cursor-pointer hover:border-sky-500 transition group" onclick="openEditModal()">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-slate-100 group-hover:text-sky-400">Set up project repository</h4>
+                                <button class="text-slate-500 hover:text-white" onclick="event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></button>
+                            </div>
+                            <p class="text-sm text-slate-400 mb-4">Initialize Git repository and push to remote server.</p>
+                            <div class="flex justify-between items-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-rose-500/10 text-rose-400 ring-1 ring-inset ring-rose-500/20">High</span>
+                                <img class="h-6 w-6 rounded-full" src="https://i.pravatar.cc/24?u=user1" alt="Assignee">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column: In Progress -->
+                <div class="kanban-column bg-slate-900/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-yellow-400"></span>
+                            <h3 class="font-semibold text-white">In Progress</h3>
+                        </div>
+                        <span class="text-sm font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">1</span>
+                    </div>
+                    <div class="space-y-4">
+                        <!-- Task Card -->
+                        <div class="bg-slate-800 border border-slate-700 rounded-lg p-4 cursor-pointer hover:border-sky-500 transition group" onclick="openEditModal()">
+                            <h4 class="font-semibold text-slate-100 mb-2 group-hover:text-sky-400">Homepage Design Implementation</h4>
+                            <p class="text-sm text-slate-400 mb-4">Implement the homepage design using React and Tailwind CSS.</p>
+                            <div class="flex justify-between items-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-500/10 text-amber-400 ring-1 ring-inset ring-amber-500/20">Medium</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-slate-400">30 Agus 2024</span>
+                                    <img class="h-6 w-6 rounded-full" src="https://i.pravatar.cc/24?u=user27" alt="Assignee">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column: Done -->
+                 <div class="kanban-column bg-slate-900/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-green-400"></span>
+                            <h3 class="font-semibold text-white">Done</h3>
+                        </div>
+                        <span class="text-sm font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <div class="space-y-4 text-center py-10 border-2 border-dashed border-slate-800 rounded-lg">
+                        <p class="text-sm text-slate-500">Tidak ada tugas.</p>
+                    </div>
+                </div>
+
+                <!-- Column: Blocked -->
+                 <div class="kanban-column bg-slate-900/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-red-500"></span>
+                            <h3 class="font-semibold text-white">Blocked</h3>
+                        </div>
+                        <span class="text-sm font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">0</span>
+                    </div>
+                    <div class="space-y-4 text-center py-10 border-2 border-dashed border-slate-800 rounded-lg">
+                       <p class="text-sm text-slate-500">Tidak ada tugas.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Add Task Modal -->
+    <div id="addTaskModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeAddTaskModal()">
+        <div class="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-lg" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center p-4 border-b border-slate-800">
+                <h2 class="text-lg font-semibold text-white">Tambah Tugas Baru</h2>
+                <button onclick="closeAddTaskModal()" class="text-slate-400 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="add-title" class="block text-sm font-medium text-slate-300 mb-1">Judul</label>
+                    <input type="text" id="add-title" placeholder="e.g., Design the login page" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label for="add-description" class="block text-sm font-medium text-slate-300 mb-1">Deskripsi</label>
+                    <textarea id="add-description" rows="3" placeholder="Tambahkan deskripsi singkat..." class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="add-status" class="block text-sm font-medium text-slate-300 mb-1">Status</label>
+                        <select id="add-status" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option selected>To Do</option>
+                            <option>In Progress</option>
+                            <option>Done</option>
+                            <option>Blocked</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label for="add-priority" class="block text-sm font-medium text-slate-300 mb-1">Prioritas</label>
+                        <select id="add-priority" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option>Low</option>
+                            <option selected>Medium</option>
+                            <option>High</option>
+                        </select>
+                    </div>
+                </div>
+                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="add-due-date" class="block text-sm font-medium text-slate-300 mb-1">Tenggat Waktu</label>
+                        <input type="date" id="add-due-date" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label for="add-progress" class="block text-sm font-medium text-slate-300 mb-1">Progress (%)</label>
+                        <input type="number" id="add-progress" placeholder="0" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end items-center p-4 bg-slate-800/50 border-t border-slate-800 rounded-b-lg">
+                <button onclick="closeAddTaskModal()" class="px-4 py-2 text-sm font-semibold text-slate-300 bg-transparent rounded-md hover:bg-slate-700 transition">Batal</button>
+                <button class="ml-2 px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-md hover:bg-sky-500 transition">Buat Tugas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeEditModal()">
+        <div class="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-lg" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-4 border-b border-slate-800">
+                <h2 class="text-lg font-semibold text-white">Edit Tugas</h2>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="edit-title" class="block text-sm font-medium text-slate-300 mb-1">Judul</label>
+                    <input type="text" id="edit-title" value="Homepage Design Implementation" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label for="edit-description" class="block text-sm font-medium text-slate-300 mb-1">Deskripsi</label>
+                    <textarea id="edit-description" rows="3" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">Implement the homepage design using React and Tailwind CSS</textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-status" class="block text-sm font-medium text-slate-300 mb-1">Status</label>
+                        <select id="edit-status" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option>To Do</option>
+                            <option selected>In Progress</option>
+                            <option>Done</option>
+                            <option>Blocked</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label for="edit-priority" class="block text-sm font-medium text-slate-300 mb-1">Prioritas</label>
+                        <select id="edit-priority" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option>Low</option>
+                            <option selected>Medium</option>
+                            <option>High</option>
+                        </select>
+                    </div>
+                </div>
+                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-due-date" class="block text-sm font-medium text-slate-300 mb-1">Tenggat Waktu</label>
+                        <input type="date" id="edit-due-date" value="2024-08-30" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label for="edit-progress" class="block text-sm font-medium text-slate-300 mb-1">Progress (%)</label>
+                        <input type="number" id="edit-progress" value="60" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="flex justify-end items-center p-4 bg-slate-800/50 border-t border-slate-800 rounded-b-lg">
+                <button onclick="closeEditModal()" class="px-4 py-2 text-sm font-semibold text-slate-300 bg-transparent rounded-md hover:bg-slate-700 transition">Batal</button>
+                <button class="ml-2 px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-md hover:bg-sky-500 transition">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dropdown Menu Logic
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    userMenu.classList.toggle('hidden');
+                });
+                document.addEventListener('click', (event) => {
+                    if (!userMenu.classList.contains('hidden') && !userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Edit Modal Logic
+            window.openEditModal = function() {
+                document.getElementById('editTaskModal').classList.remove('hidden');
+            }
+            window.closeEditModal = function() {
+                document.getElementById('editTaskModal').classList.add('hidden');
+            }
+
+            // Add Task Modal Logic
+            window.openAddTaskModal = function() {
+                document.getElementById('addTaskModal').classList.remove('hidden');
+            }
+            window.closeAddTaskModal = function() {
+                document.getElementById('addTaskModal').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
+

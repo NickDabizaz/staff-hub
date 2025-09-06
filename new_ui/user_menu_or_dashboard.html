@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Staff Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Mengatasi sedikit pergeseran layout karena scrollbar */
+        html {
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200">
+
+    <div id="app-wrapper" class="min-h-screen">
+        <!-- Navigation Bar -->
+        <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo & App Name -->
+                    <div class="flex items-center space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-500">
+                                <rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-slate-50">Staff Hub</span>
+                    </div>
+                    
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button id="user-menu-button" type="button" class="flex items-center space-x-2 p-2 rounded-full hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-sky-500 transition-colors">
+                            <span class="hidden sm:inline text-sm font-medium text-slate-300">Project Manager 1</span>
+                             <svg class="hidden sm:inline h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 origin-top-right bg-slate-800 border border-slate-700 rounded-md shadow-lg py-1 focus:outline-none">
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Profil Anda</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700">Pengaturan</a>
+                            <div class="border-t border-slate-700 my-1"></div>
+                            <a href="/login" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Page Header -->
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold text-white">Selamat Datang Kembali, Project Manager 1!</h1>
+                <p class="mt-1 text-slate-400">Berikut adalah daftar proyek yang sedang Anda kerjakan.</p>
+            </header>
+
+            <!-- Projects Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Project Card 1: Example -->
+                <div class="bg-slate-800/50 border border-slate-800 rounded-lg shadow-lg hover:border-sky-500 transition-all duration-300 flex flex-col">
+                    <div class="p-6 flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-400 ring-1 ring-inset ring-green-500/20">
+                                Active
+                            </span>
+                             <a href="#" class="text-slate-500 hover:text-sky-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"></path><path d="m21 3-9 9"></path><path d="M15 3h6v6"></path></svg>
+                            </a>
+                        </div>
+                        <h2 class="text-lg font-semibold text-white mb-2">Company Website Redesign</h2>
+                        <p class="text-sm text-slate-400 line-clamp-2">Complete redesign of the company website with modern UI/UX principles to improve user engagement.</p>
+                    </div>
+                    <div class="border-t border-slate-800 px-6 py-4 space-y-4">
+                         <!-- Progress Bar -->
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-slate-400">Progress</span>
+                                <span class="font-medium text-slate-300">75%</span>
+                            </div>
+                            <div class="w-full bg-slate-700 rounded-full h-2">
+                                <div class="bg-sky-500 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        <!-- Team & Deadline -->
+                        <div class="flex justify-end items-center">
+                             <div class="text-xs text-slate-400">
+                                15 Okt 2025
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Card 2: Example -->
+                 <div class="bg-slate-800/50 border border-slate-800 rounded-lg shadow-lg hover:border-sky-500 transition-all duration-300 flex flex-col">
+                    <div class="p-6 flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-400 ring-1 ring-inset ring-yellow-500/20">
+                                In Progress
+                            </span>
+                             <a href="#" class="text-slate-500 hover:text-sky-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"></path><path d="m21 3-9 9"></path><path d="M15 3h6v6"></path></svg>
+                            </a>
+                        </div>
+                        <h2 class="text-lg font-semibold text-white mb-2">Mobile Banking App</h2>
+                        <p class="text-sm text-slate-400 line-clamp-2">Development of a secure and user-friendly mobile banking application for iOS and Android.</p>
+                    </div>
+                    <div class="border-t border-slate-800 px-6 py-4 space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1"><span class="text-slate-400">Progress</span><span class="font-medium text-slate-300">40%</span></div>
+                            <div class="w-full bg-slate-700 rounded-full h-2"><div class="bg-sky-500 h-2 rounded-full" style="width: 40%"></div></div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                        <div class="flex justify-end items-center">
+                            <div class="text-xs text-slate-400">
+                                30 Nov 2025
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Add more project cards as needed -->
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    userMenu.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (event) => {
+                    if (!userMenu.classList.contains('hidden') && !userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
+
+
+
