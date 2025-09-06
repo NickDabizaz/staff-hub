@@ -11,7 +11,7 @@ Berdasarkan analisis folder `new_ui/`, berikut adalah mapping file HTML ke halam
 | File HTML | Target Halaman | Deskripsi |
 |-----------|----------------|-----------|
 | `login_page.html` | `/login` | Halaman login dengan dark theme |
-| `admin_menu_dashboard.html` | `/admin/dashboard` | Dashboard admin dengan statistik dan overview |
+| `admin_menu_dashboard.html` | `/admin` | Dashboard admin dengan statistik dan overview |
 | `admin_user.html` | `/admin/users` | Manajemen user dengan form tambah dan tabel |
 | `admin_team.html` | `/admin/teams` | Manajemen team dengan modal tambah team |
 | `admin_project.html` | `/admin/projects` | Manajemen project dengan form dan tabel |
@@ -42,9 +42,9 @@ Berdasarkan analisis folder `new_ui/`, berikut adalah mapping file HTML ke halam
 **Komponen yang perlu diubah:**
 - `src/app/login/components/LoginForm.tsx`
 
-### 2. Migrasi Dashboard Admin (`/admin/dashboard`) - ✅ SELESAI
+### 2. Migrasi Dashboard Admin (`/admin`)
 
-**File Target:** `src/app/admin/dashboard/page.tsx`
+**File Target:** `src/app/admin/page.tsx`
 **File Referensi:** `new_ui/admin_menu_dashboard.html`
 
 **Langkah-langkah:**

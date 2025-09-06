@@ -7,7 +7,7 @@ import { LayoutDashboard, Users, Users2, Folder, Settings } from "lucide-react";
 const menuItems = [
   {
     title: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/admin",
     icon: LayoutDashboard,
   },
   {
