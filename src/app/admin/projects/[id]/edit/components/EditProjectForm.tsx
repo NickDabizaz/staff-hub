@@ -9,6 +9,7 @@ import { id } from "date-fns/locale";
 import type { ProjectWithTeams } from "@/app/admin/projects/types/projectTypes";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
 import { updateProjectAction } from "../../../actions";
+import { Save } from "lucide-react";
 
 /**
  * Komponen form untuk mengedit proyek yang sudah ada
@@ -108,52 +109,52 @@ export default function EditProjectForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Nama Project</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Nama Project</label>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/30"
+          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
           placeholder="Nama project"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Deskripsi</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Deskripsi</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/30"
+          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
           placeholder="Deskripsi project"
           rows={4}
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Deadline</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Deadline</label>
         <DatePicker 
           date={deadline} 
           onDateChange={setDeadline} 
-          className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/30"
+          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Tim yang Menangani</label>
-        <div className="space-y-2 max-h-60 overflow-y-auto p-3 border border-white/10 rounded-xl bg-white/5">
+        <label className="block text-sm font-medium text-slate-300 mb-1">Tim yang Menangani</label>
+        <div className="space-y-2 max-h-60 overflow-y-auto p-3 border border-slate-700 rounded-md bg-slate-800">
           {teams.length === 0 ? (
-            <p className="text-sm text-neutral-400">Belum ada tim yang bisa dipilih</p>
+            <p className="text-sm text-slate-400">Belum ada tim yang bisa dipilih</p>
           ) : (
             teams.map((team) => (
-              <div key={team.team_id} className="flex items-center">
+              <div key={team.team_id} className="flex items-center space-x-3 p-2 rounded hover:bg-slate-700/50 cursor-pointer">
                 <input
                   type="checkbox"
                   id={`team-${team.team_id}`}
                   checked={selectedTeamIds.includes(team.team_id)}
                   onChange={(e) => handleTeamChange(team.team_id, e.target.checked)}
-                  className="mr-3 h-4 w-4 rounded border-white/10 bg-white/5 text-white focus:ring-white/30"
+                  className="h-4 w-4 rounded bg-slate-700 border-slate-600 text-sky-500 focus:ring-sky-500"
                 />
-                <label htmlFor={`team-${team.team_id}`} className="text-sm">
+                <label htmlFor={`team-${team.team_id}`} className="text-sm text-white">
                   {team.team_name}
                 </label>
               </div>
@@ -164,20 +165,21 @@ export default function EditProjectForm({
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-3 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
+          className="px-4 py-2 text-sm font-semibold text-slate-300 bg-transparent rounded-lg hover:bg-slate-700 transition"
         >
           Batal
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold shadow hover:shadow-lg active:scale-[.98] disabled:opacity-60"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-lg hover:bg-sky-500 transition disabled:opacity-60"
         >
+          <Save className="h-4 w-4" />
           {loading ? "Menyimpan..." : "Simpan Perubahan"}
         </button>
       </div>

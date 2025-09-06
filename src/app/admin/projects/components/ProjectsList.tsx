@@ -29,63 +29,63 @@ export default function ProjectsList({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10">
+    <div className="overflow-hidden rounded-lg border border-slate-800">
       {projects.length === 0 ? (
-        <div className="py-10 text-center text-neutral-400">
+        <div className="py-10 text-center text-slate-400">
           Belum ada project.{' '}
-          <Link href="/admin/projects/new" className="text-white underline">
+          <Link href="/admin/projects/new" className="text-sky-400 underline">
             Tambah project pertama
           </Link>
           .
         </div>
       ) : (
-        <table className="w-full text-sm">
-          <thead className="bg-white/5">
+        <table className="w-full text-sm text-left">
+          <thead className="text-xs text-slate-400 uppercase bg-slate-900/50">
             <tr>
-              <Th>Nama Project</Th>
-              <Th>Deadline</Th>
-              <Th>Tim</Th>
-              <Th center>Aksi</Th>
+              <th scope="col" className="px-6 py-3">Nama Project</th>
+              <th scope="col" className="px-6 py-3">Deadline</th>
+              <th scope="col" className="px-6 py-3">Tim</th>
+              <th scope="col" className="px-6 py-3">Aksi</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-800">
             {projects.map((project) => (
-              <tr key={project.project_id} className="border-t border-white/10">
-                <Td>
-                  <div className="font-medium">{project.project_name}</div>
+              <tr key={project.project_id}>
+                <td className="px-6 py-4">
+                  <div className="font-medium text-white">{project.project_name}</div>
                   {project.project_description && (
-                    <div className="text-xs text-neutral-400 mt-1 line-clamp-2">
+                    <div className="text-xs text-slate-400 mt-1 line-clamp-2">
                       {project.project_description}
                     </div>
                   )}
-                </Td>
-                <Td>
+                </td>
+                <td className="px-6 py-4">
                   <div>{new Date(project.project_deadline).toLocaleDateString('id-ID')}</div>
-                </Td>
-                <Td>
+                </td>
+                <td className="px-6 py-4">
                   <div className="flex flex-wrap gap-1">
                     {project.project_teams.length === 0 ? (
-                      <span className="text-xs text-neutral-400">-</span>
+                      <span className="text-xs text-slate-400">-</span>
                     ) : (
                       project.project_teams.map((pt) => (
                         <span 
                           key={pt.team_id} 
-                          className="inline-flex items-center rounded-full bg-white/10 px-2 py-1 text-xs"
+                          className="inline-flex items-center rounded-full bg-slate-700 text-slate-300 px-2 py-1 text-xs"
                         >
                           {getTeamName(pt.team_id)}
                         </span>
                       ))
                     )}
                   </div>
-                </Td>
-                <Td center>
+                </td>
+                <td className="px-6 py-4">
                   <Link 
                     href={`/admin/projects/${project.project_id}`}
-                    className="inline-flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 hover:bg-white/10 text-sm"
+                    className="font-medium text-sky-400 hover:text-sky-300"
                   >
                     Detail
                   </Link>
-                </Td>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -100,17 +100,20 @@ export default function ProjectsList({
  * 
  * @param children - Konten yang akan ditampilkan di sel header
  * @param center - Apakah konten harus di tengah
+ * @param classNameOverride - Class CSS tambahan
  * @returns Elemen sel header tabel
  */
 function Th({
   children,
   center,
+  classNameOverride,
 }: {
   children: React.ReactNode;
   center?: boolean;
+  classNameOverride?: string;
 }) {
   return (
-    <th className={`px-4 py-3 font-semibold text-left ${center ? "text-center" : ""}`}>
+    <th className={`${classNameOverride ?? "px-4 py-3 font-semibold"} ${center ? "text-center" : ""}`}>
       {children}
     </th>
   );
@@ -120,19 +123,26 @@ function Th({
  * Komponen sel data tabel
  * 
  * @param children - Konten yang akan ditampilkan di sel data
+ * @param className - Class CSS tambahan
  * @param center - Apakah konten harus di tengah
+ * @param colSpan - Jumlah kolom yang akan digabung
  * @returns Elemen sel data tabel
  */
 function Td({
   children,
+  className = "",
   center = false,
+  colSpan,
 }: {
   children: React.ReactNode;
+  className?: string;
   center?: boolean;
+  colSpan?: number;
 }) {
   return (
     <td
-      className={`px-4 py-3 align-middle ${center ? "text-center" : ""}`}
+      className={`px-4 py-3 align-middle ${center ? "text-center" : ""} ${className}`}
+      colSpan={colSpan}
     >
       {children}
     </td>

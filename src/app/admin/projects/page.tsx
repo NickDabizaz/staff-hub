@@ -1,9 +1,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { listTeamsService } from "@/app/admin/teams/services/teamService";
 import { listProjectsService } from "./services/projectService";
 import ProjectsList from "./components/ProjectsList";
+import Sidebar from "@/app/admin/components/Sidebar";
+import Header from "@/app/admin/components/Header";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 
 /**
  * Halaman utama untuk manajemen proyek
@@ -31,27 +34,37 @@ export default async function ProjectsPage() {
   const projects = projectsRes.ok ? projectsRes.data : [];
 
   return (
-    <main className="p-6 space-y-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Projects</h1>
-        <Link href="/admin" className="underline text-sm">
-          Kembali
-        </Link>
-      </header>
+    <div className="flex h-screen bg-slate-900">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-950 p-6 space-y-6">
+          <header>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-white">Projects</h1>
+                <p className="mt-1 text-slate-400">Lihat semua proyek yang ada di sistem.</p>
+              </div>
+              <Link 
+                href="/admin/projects/new" 
+                className="inline-flex items-center justify-center bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-sky-500 transition-all duration-300 text-sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Tambah Project
+              </Link>
+            </div>
+          </header>
 
-      <section className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/0 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.05)]">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Daftar Projects</h3>
-          <Link 
-            href="/admin/projects/new" 
-            className="inline-flex items-center gap-2 rounded-xl bg-white text-black px-3 py-1.5 text-sm font-semibold shadow hover:shadow-lg"
-          >
-            Tambah Project
-          </Link>
-        </div>
-        
-        <ProjectsList projects={projects} teams={teams} />
-      </section>
-    </main>
+          <section className="bg-slate-800/50 border border-slate-800 rounded-lg">
+            <div className="p-4 border-b border-slate-800">
+              <h3 className="font-semibold">Daftar Projects</h3>
+            </div>
+            <div className="p-4">
+              <ProjectsList projects={projects} teams={teams} />
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
   );
 }
