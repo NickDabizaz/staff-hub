@@ -21,10 +21,24 @@ export async function loginAction(payload: { email: string; password: string }) 
     .eq("user_email", email)
     .single();
 
-  // Jika terjadi kesalahan atau pengguna tidak ditemukan atau password tidak cocok
-  if (error || !user || user.user_password !== password) {
+  // Jika terjadi kesalahan database
+  if (error && error.code !== "PGRST116") { // PGRST116 = No rows found
     const c = await cookies();
-    c.set("sb_login_error", "Email atau password salah", { path: "/login", maxAge: 5 });
+    c.set("sb_login_error", "Terjadi kesalahan sistem. Silakan coba lagi.", { path: "/login", maxAge: 5 });
+    redirect("/login");
+  }
+
+  // Jika pengguna tidak ditemukan
+  if (!user) {
+    const c = await cookies();
+    c.set("sb_login_error", "Akun tidak terdaftar", { path: "/login", maxAge: 5 });
+    redirect("/login");
+  }
+
+  // Jika password tidak cocok
+  if (user.user_password !== password) {
+    const c = await cookies();
+    c.set("sb_login_error", "Password salah", { path: "/login", maxAge: 5 });
     redirect("/login");
   }
 

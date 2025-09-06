@@ -1,11 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase-server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { format, isPast, isFuture, differenceInDays } from "date-fns";
-import { id } from "date-fns/locale";
+import { differenceInDays } from "date-fns";
+import Sidebar from "./components/Sidebar";
+import Header from "./components/Header";
+import StatCard from "./components/StatCard";
+import OverdueTasksSection from "./components/OverdueTasksSection";
+import DueSoonTasksSection from "./components/DueSoonTasksSection";
+import ProjectProgressSection from "./components/ProjectProgressSection";
 
 /**
  * Interface untuk struktur data tugas terlambat
@@ -149,159 +151,29 @@ export default async function AdminDashboardPage() {
   const dueSoonTasksCount = transformedDueSoonTasks.length;
 
   return (
-    <main className="p-6 space-y-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Dashboard Admin</h1>
-        <Link href="/admin" className="underline text-sm">
-          Kembali
-        </Link>
-      </header>
+    <div className="flex h-screen bg-slate-900">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-950 p-6 space-y-6">
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard title="Total Proyek" value={totalProjects || 0} />
+            <StatCard title="Total Tugas" value={totalTasks || 0} />
+            <StatCard title="Tugas Terlambat" value={overdueTasksCount || 0} isOverdue={true} />
+            <StatCard title="Jatuh Tempo 7 Hari" value={dueSoonTasksCount || 0} />
+          </div>
 
-      {/* Kartu Ringkasan Statistik */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Proyek</CardDescription>
-            <CardTitle className="text-3xl">{totalProjects}</CardTitle>
-          </CardHeader>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Tugas</CardDescription>
-            <CardTitle className="text-3xl">{totalTasks}</CardTitle>
-          </CardHeader>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tugas Terlambat</CardDescription>
-            <CardTitle className="text-3xl">{overdueTasksCount}</CardTitle>
-          </CardHeader>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Jatuh Tempo 7 Hari</CardDescription>
-            <CardTitle className="text-3xl">{dueSoonTasksCount}</CardTitle>
-          </CardHeader>
-        </Card>
-      </section>
+          {/* Tugas Terlambat */}
+          <OverdueTasksSection tasks={transformedOverdueTasks} />
 
-      {/* Tugas Terlambat */}
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle>Tugas Terlambat</CardTitle>
-            <CardDescription>Daftar tugas yang melewati tenggat waktu</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {transformedOverdueTasks.length > 0 ? (
-              <div className="space-y-4">
-                {transformedOverdueTasks.map(task => (
-                  <div key={task.task_id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h3 className="font-medium">{task.task_title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {task.project_name} • {task.assignee_name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant="destructive">
-                        {task.days_overdue} hari terlambat
-                      </Badge>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Jatuh tempo: {format(new Date(task.task_due_date), "dd MMM yyyy", { locale: id })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center py-4 text-muted-foreground">Tidak ada tugas terlambat</p>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+          {/* Tugas yang Akan Jatuh Tempo */}
+          <DueSoonTasksSection tasks={transformedDueSoonTasks} />
 
-      {/* Tugas yang Akan Jatuh Tempo */}
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle>Jatuh Tempo dalam 7 Hari</CardTitle>
-            <CardDescription>Daftar tugas yang akan jatuh tempo dalam seminggu ke depan</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {transformedDueSoonTasks.length > 0 ? (
-              <div className="space-y-4">
-                {transformedDueSoonTasks.map(task => (
-                  <div key={task.task_id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h3 className="font-medium">{task.task_title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {task.project_name} • {task.assignee_name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant={task.days_until_due <= 2 ? "destructive" : "default"}>
-                        {task.days_until_due} hari lagi
-                      </Badge>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Jatuh tempo: {format(new Date(task.task_due_date), "dd MMM yyyy", { locale: id })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center py-4 text-muted-foreground">Tidak ada tugas yang akan jatuh tempo dalam 7 hari ke depan</p>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Progress Proyek */}
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle>Progress Proyek</CardTitle>
-            <CardDescription>Persentase penyelesaian setiap proyek</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {transformedProjects.length > 0 ? (
-              <div className="space-y-4">
-                {transformedProjects.map(project => (
-                  <div key={project.project_id} className="space-y-2">
-                    <div className="flex justify-between">
-                      <h3 className="font-medium">{project.project_name}</h3>
-                      <span className="text-sm">{project.progress_percentage}%</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          project.progress_percentage < 30 ? 'bg-red-500' : 
-                          project.progress_percentage < 70 ? 'bg-yellow-500' : 'bg-green-500'
-                        }`}
-                        style={{ width: `${project.progress_percentage}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>
-                        {project.completed_tasks} dari {project.total_tasks} tugas selesai
-                      </span>
-                      <span>
-                        Deadline: {format(new Date(project.project_deadline), "dd MMM yyyy", { locale: id })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center py-4 text-muted-foreground">Tidak ada proyek</p>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-    </main>
+          {/* Progress Proyek */}
+          <ProjectProgressSection projects={transformedProjects} />
+        </main>
+      </div>
+    </div>
   );
 }

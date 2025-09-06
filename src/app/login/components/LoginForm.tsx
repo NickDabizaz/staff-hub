@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loginAction } from "../actions";
-import { Eye, EyeOff, LayoutDashboard } from "lucide-react";
+import { Eye, EyeOff, LayoutDashboard, AlertCircle } from "lucide-react";
 
 /**
  * Komponen form login yang menangani input pengguna dan mengirimkan data ke server
@@ -10,6 +10,28 @@ import { Eye, EyeOff, LayoutDashboard } from "lucide-react";
  */
 export default function LoginForm() { 
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Memeriksa apakah ada error dari cookie saat komponen dimuat
+  useEffect(() => {
+    // Fungsi untuk mengambil error dari cookie
+    const getErrorFromCookie = () => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; sb_login_error=`);
+      if (parts.length === 2) {
+        return parts.pop()?.split(';').shift();
+      }
+      return null;
+    };
+
+    // Mendapatkan error dari cookie
+    const loginError = getErrorFromCookie();
+    if (loginError) {
+      setError(decodeURIComponent(loginError));
+      // Hapus cookie error setelah ditampilkan
+      document.cookie = "sb_login_error=; path=/login; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+  }, []);
 
   /**
    * Fungsi untuk menangani pengiriman form login
@@ -19,6 +41,8 @@ export default function LoginForm() {
    */
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Reset error sebelum submit
+    setError(null);
     const fd = new FormData(e.currentTarget);
     await loginAction({
       email: String(fd.get("email") || ""),
@@ -40,6 +64,14 @@ export default function LoginForm() {
           <p className="text-slate-400 mt-1">Masuk untuk melanjutkan ke dasbor Anda</p>
         </div>
   
+        {/* Notifikasi Error */}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-900/30 border border-red-800 flex items-start">
+            <AlertCircle className="w-5 h-5 text-red-400 mr-2 mt-0.5 flex-shrink-0" />
+            <p className="text-red-300 text-sm">{error}</p>
+          </div>
+        )}
+
         {/* Form Login */}
         <form onSubmit={onSubmit} className="space-y-6">
           
