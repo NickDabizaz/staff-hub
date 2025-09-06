@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase-server";
 import ProjectList from "@/components/user/ProjectList";
+import Navbar from "@/components/Navbar";
 
 /**
  * Halaman dashboard utama untuk pengguna reguler
@@ -45,6 +46,8 @@ export default async function Dashboard() {
 
   const teamIds = teamMembers?.map(tm => tm.team_id) || [];
   
+  let formattedProjects = [];
+  
   if (teamIds.length > 0) {
     const { data: projectTeams, error: projectTeamsError } = await sb
       .from('project_teams')
@@ -58,6 +61,7 @@ export default async function Dashboard() {
     const projectIds = projectTeams?.map(pt => pt.project_id) || [];
     
     if (projectIds.length > 0) {
+      // First, get project details
       const { data: projects, error: projectsError } = await sb
         .from('projects')
         .select(`
@@ -72,56 +76,63 @@ export default async function Dashboard() {
         console.error('Error fetching projects:', projectsError);
       }
 
+      // Then, get task counts for each project to calculate progress
+      const { data: tasksData, error: tasksError } = await sb
+        .from('tasks')
+        .select(`
+          project_id,
+          task_status
+        `)
+        .in('project_id', projectIds);
+
+      if (tasksError) {
+        console.error('Error fetching tasks:', tasksError);
+      }
+
+      // Process projects with task data to calculate progress
+      const projectTaskMap = tasksData?.reduce((acc: any, task: any) => {
+        if (!acc[task.project_id]) {
+          acc[task.project_id] = { total: 0, completed: 0 };
+        }
+        acc[task.project_id].total += 1;
+        if (task.task_status === 'DONE') {
+          acc[task.project_id].completed += 1;
+        }
+        return acc;
+      }, {}) || {};
+
       // Memformat data proyek untuk komponen ProjectList
-      const formattedProjects = projects?.map(project => ({
-        id: project.project_id.toString(),
-        title: project.project_name,
-        description: project.project_description || 'Tidak ada deskripsi',
-        status: 'Active' // Untuk sekarang kita set status sebagai Active
-      })) || [];
-
-      return (
-        <main className="p-6 space-y-6">
-          <header className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold">Dashboard</h1>
-              <p className="text-sm text-white/60">Halo, {currentUser.name}</p>
-            </div>
-            <nav className="space-x-3 text-sm">
-              <a href="/logout" className="underline">
-                Logout
-              </a>
-            </nav>
-          </header>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-4">Daftar Project</h2>
-            <ProjectList projects={formattedProjects} />
-          </section>
-        </main>
-      );
+      formattedProjects = projects?.map((project: any) => {
+        const taskStats = projectTaskMap[project.project_id] || { total: 0, completed: 0 };
+        const progressPercentage = taskStats.total > 0 ? Math.round((taskStats.completed / taskStats.total) * 100) : 0;
+        
+        return {
+          id: project.project_id.toString(),
+          title: project.project_name,
+          description: project.project_description || 'Tidak ada deskripsi',
+          status: 'Active', // Untuk sekarang kita set status sebagai Active
+          deadline: project.project_deadline,
+          progress: progressPercentage
+        };
+      }) || [];
     }
   }
 
-  // Jika pengguna tidak memiliki proyek
   return (
-    <main className="p-6 space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-white/60">Halo, {currentUser.name}</p>
-        </div>
-        <nav className="space-x-3 text-sm">
-          <a href="/logout" className="underline">
-            Logout
-          </a>
-        </nav>
-      </header>
+    <>
+      <Navbar user={currentUser} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-white">Selamat Datang Kembali, {currentUser.name}!</h1>
+          <p className="mt-1 text-slate-400">Berikut adalah daftar proyek yang sedang Anda kerjakan.</p>
+        </header>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Daftar Project</h2>
-        <ProjectList projects={[]} />
-      </section>
-    </main>
+        {/* Projects Section */}
+        <section>
+          <ProjectList projects={formattedProjects} />
+        </section>
+      </main>
+    </>
   );
 }

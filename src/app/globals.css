@@ -59,3 +59,11 @@ body {
   background-color: rgba(16, 185, 129, 0.1);
   color: #10b981;
 }
+
+/* Line clamp utility */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
