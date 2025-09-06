@@ -132,10 +132,16 @@ Berdasarkan analisis folder `new_ui/`, berikut adalah mapping file HTML ke halam
    - Checkbox list untuk tim yang menangani
    - Button submit dan kembali
 4. ✅ Pastikan semua operasi project management tetap berfungsi
+5. ✅ Menambahkan fitur hapus project dengan konfirmasi
+6. ✅ Memperbaiki error pada fungsi tambah user agar secara otomatis menambahkan domain @staffhub.com
 
 **Komponen yang perlu diubah:**
 - `src/app/admin/projects/components/ProjectsList.tsx`
 - `src/app/admin/projects/components/CreateProjectForm.tsx`
+- `src/app/admin/projects/actions.ts`
+- `src/app/admin/projects/services/projectService.ts`
+- `src/app/admin/projects/data/projectsRepo.ts`
+- `src/app/admin/projects/[id]/components/DeleteProjectButton.tsx`
 
 ### 6. Migrasi Pengaturan Admin (`/admin/settings`)
 

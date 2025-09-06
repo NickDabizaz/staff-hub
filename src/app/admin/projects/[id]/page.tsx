@@ -6,7 +6,8 @@ import ProjectDetail from "./components/ProjectDetail";
 import Sidebar from "@/app/admin/components/Sidebar";
 import Header from "@/app/admin/components/Header";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
+import DeleteProjectButton from "./components/DeleteProjectButton";
 
 /**
  * Halaman detail proyek
@@ -76,8 +77,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                     href={`/admin/projects/${project.project_id}/edit`}
                     className="inline-flex items-center justify-center bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-sky-500 transition-all duration-300 text-sm"
                   >
+                    <Edit className="h-4 w-4 mr-2" />
                     Edit Project
                   </Link>
+                  <DeleteProjectButton 
+                    project_id={project.project_id}
+                    project_name={project.project_name}
+                  />
                 </div>
               </div>
             </div>

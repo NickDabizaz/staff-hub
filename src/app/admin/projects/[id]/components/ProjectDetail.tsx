@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ProjectWithTeams } from "@/app/admin/projects/types/projectTypes";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
+import DeleteProjectButton from "./DeleteProjectButton";
 
 /**
  * Komponen untuk menampilkan detail proyek

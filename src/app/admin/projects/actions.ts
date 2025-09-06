@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { CreateProjectSchema } from "./schemas/projectsSchemas";
-import { createProjectService, updateProjectService } from "./services/projectService";
+import { createProjectService, updateProjectService, deleteProjectService } from "./services/projectService";
 import { ProjectWithTeams } from "./types/projectTypes";
 
 /**
@@ -60,9 +60,9 @@ export async function createProjectAction(formData: FormData): Promise<ProjectWi
  * @param formData - Data form yang berisi informasi proyek yang diperbarui
  * @returns Hasil operasi pembaruan proyek
  */
-export async function updateProjectAction(formData: FormData): Promise<ProjectWithTeams> {
+export async function updateProjectAction(formData: FormData) {
   const projectId = num(formData.get("project_id"));
-  if (isNaN(projectId)) throw new Error("ID project tidak valid");
+  if (isNaN(projectId)) throw new Error("ID proyek tidak valid");
 
   const rawTeams = String(formData.get("team_ids") || "[]");
   let team_ids: number[] = [];
@@ -101,4 +101,22 @@ export async function updateProjectAction(formData: FormData): Promise<ProjectWi
 
   revalidatePath("/admin/projects");
   return res.data;
+}
+
+/**
+ * Action untuk menghapus proyek
+ * Memvalidasi ID proyek dan menghapus proyek melalui service
+ * 
+ * @param formData - Data form yang berisi ID proyek yang akan dihapus
+ * @returns Hasil operasi penghapusan proyek
+ */
+export async function deleteProjectAction(formData: FormData) {
+  const projectId = num(formData.get("project_id"));
+  if (isNaN(projectId)) throw new Error("ID proyek tidak valid");
+
+  const res = await deleteProjectService(projectId);
+  if (!res.ok) throw new Error(res.error);
+
+  revalidatePath("/admin/projects");
+  return res;
 }

@@ -1,6 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import { deleteProjectAction } from "../actions";
 import type { ProjectWithTeams } from "../types/projectTypes";
 import type { TeamWithMembers } from "@/app/admin/teams/types/teamTypes";
+import { Trash2 } from "lucide-react";
 
 /**
  * Komponen untuk menampilkan daftar proyek dalam format tabel
@@ -17,6 +24,10 @@ export default function ProjectsList({
   projects: ProjectWithTeams[]; 
   teams: TeamWithMembers[]; 
 }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   /**
    * Fungsi utilitas untuk mendapatkan nama tim berdasarkan ID
    * 
@@ -26,6 +37,56 @@ export default function ProjectsList({
   const getTeamName = (teamId: number) => {
     const team = teams.find(t => t.team_id === teamId);
     return team ? team.team_name : `Team #${teamId}`;
+  };
+
+  /**
+   * Handler untuk menghapus proyek
+   * Menampilkan konfirmasi dan menghapus proyek jika dikonfirmasi
+   * 
+   * @param projectId - ID proyek yang akan dihapus
+   * @param projectName - Nama proyek yang akan dihapus (untuk menampilkan di konfirmasi)
+   */
+  const handleDeleteProject = async (projectId: number, projectName: string) => {
+    const res = await Swal.fire({
+      icon: "warning",
+      title: `Hapus Project "${projectName}"?`,
+      text: "Anda tidak akan dapat mengembalikan proyek ini!",
+      showCancelButton: true,
+      confirmButtonText: "Ya, hapus",
+      cancelButtonText: "Batal",
+    });
+
+    if (!res.isConfirmed) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const fd = new FormData();
+      fd.append("project_id", String(projectId));
+
+      await deleteProjectAction(fd);
+
+      await Swal.fire({
+        icon: "success",
+        title: "Project dihapus",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      // Menyegarkan halaman untuk menampilkan perubahan
+      router.refresh();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Terjadi kesalahan";
+      setError(msg);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: msg,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,19 +139,28 @@ export default function ProjectsList({
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 flex items-center gap-2">
                   <Link 
                     href={`/admin/projects/${project.project_id}`}
                     className="font-medium text-sky-400 hover:text-sky-300"
                   >
                     Detail
                   </Link>
+                  <button
+                    onClick={() => handleDeleteProject(project.project_id, project.project_name)}
+                    disabled={loading}
+                    className="font-medium text-red-500 hover:text-red-400"
+                    title="Hapus Project"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+      {error && <div className="text-sm text-red-400 p-4">{error}</div>}
     </div>
   );
 }

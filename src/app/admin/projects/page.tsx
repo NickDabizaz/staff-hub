@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { listTeamsService } from "@/app/admin/teams/services/teamService";
 import { listProjectsService } from "./services/projectService";
 import ProjectsList from "./components/ProjectsList";
 import Sidebar from "@/app/admin/components/Sidebar";
 import Header from "@/app/admin/components/Header";
-import Link from "next/link";
 import { Plus } from "lucide-react";
 
 /**

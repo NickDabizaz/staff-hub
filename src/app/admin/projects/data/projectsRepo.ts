@@ -30,10 +30,10 @@ export async function listProjectsRepo(): Promise<Result<ProjectWithTeams[]>> {
 /**
  * Repository function untuk mengambil detail proyek berdasarkan ID
  * 
- * @param projectId - ID proyek yang akan diambil
- * @returns Data proyek atau error jika terjadi kesalahan
+ * @param project_id - ID proyek yang akan diambil
+ * @returns Data proyek atau error jika tidak ditemukan
  */
-export async function getProjectRepo(projectId: number): Promise<Result<ProjectWithTeams>> {
+export async function getProjectRepo(project_id: number): Promise<Result<ProjectWithTeams | null>> {
   const sb = supabaseServer();
   
   const { data, error } = await sb
@@ -42,7 +42,7 @@ export async function getProjectRepo(projectId: number): Promise<Result<ProjectW
       `project_id,project_name,project_description,project_deadline,
        project_teams:project_teams(team_id)`
     )
-    .eq("project_id", projectId)
+    .eq("project_id", project_id)
     .single();
 
   if (error) return err(error.message);
@@ -53,11 +53,11 @@ export async function getProjectRepo(projectId: number): Promise<Result<ProjectW
  * Repository function untuk membuat proyek baru di database
  * 
  * @param input - Data proyek baru yang akan dibuat
- * @returns Hasil operasi pembuatan proyek atau error jika terjadi kesalahan
+ * @returns Hasil operasi pembuatan proyek
  */
 export async function createProjectRepo(input: {
   project_name: string;
-  project_description?: string;
+  project_description: string;
   project_deadline: string;
   team_ids: number[];
 }): Promise<Result<ProjectWithTeams>> {
@@ -105,15 +105,15 @@ export async function createProjectRepo(input: {
 }
 
 /**
- * Repository function untuk memperbarui proyek yang sudah ada di database
+ * Repository function untuk memperbarui proyek yang sudah ada
  * 
  * @param input - Data proyek yang akan diperbarui
- * @returns Hasil operasi pembaruan proyek atau error jika terjadi kesalahan
+ * @returns Hasil operasi pembaruan proyek
  */
 export async function updateProjectRepo(input: {
   project_id: number;
   project_name: string;
-  project_description?: string;
+  project_description: string;
   project_deadline: string;
   team_ids: number[];
 }): Promise<Result<ProjectWithTeams>> {
@@ -163,4 +163,32 @@ export async function updateProjectRepo(input: {
   if (fullErr || !projectWithTeams) return err(fullErr?.message ?? "Gagal baca project");
 
   return ok(projectWithTeams);
+}
+
+/**
+ * Repository function untuk menghapus proyek berdasarkan ID
+ * 
+ * @param project_id - ID proyek yang akan dihapus
+ * @returns Hasil operasi penghapusan proyek
+ */
+export async function deleteProjectRepo(project_id: number): Promise<Result<null>> {
+  const sb = supabaseServer();
+
+  // 1) Menghapus tim proyek terlebih dahulu
+  const { error: teamErr } = await sb
+    .from("project_teams")
+    .delete()
+    .eq("project_id", project_id);
+    
+  if (teamErr) return err(teamErr.message);
+
+  // 2) Menghapus proyek utama
+  const { error: projectErr } = await sb
+    .from("projects")
+    .delete()
+    .eq("project_id", project_id);
+    
+  if (projectErr) return err(projectErr.message);
+
+  return ok(null);
 }
