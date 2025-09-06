@@ -265,15 +265,9 @@ export default function TeamsAdmin({
           <header>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-white">Kelola Teams</h1>
+                <h1 className="text-3xl font-bold text-white">Teams</h1>
                 <p className="mt-1 text-slate-400">Tambah, cari, dan kelola tim beserta anggotanya.</p>
               </div>
-              <Link 
-                href="/admin"
-                className="inline-flex items-center text-sm text-slate-300 hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" /> Kembali
-              </Link>
             </div>
           </header>
 

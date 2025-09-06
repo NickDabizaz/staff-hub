@@ -257,15 +257,9 @@ export default function UsersAdmin({
           <header>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-white">Kelola Users</h1>
+                <h1 className="text-3xl font-bold text-white">Users</h1>
                 <p className="mt-1 text-slate-400">Tambah, cari, filter, dan kelola status user.</p>
               </div>
-              <Link 
-                href="/admin"
-                className="inline-flex items-center text-sm text-slate-300 hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" /> Kembali
-              </Link>
             </div>
           </header>
 
@@ -347,7 +341,7 @@ export default function UsersAdmin({
                     disabled={loading}
                     className="flex-1 inline-flex items-center justify-center bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-sky-500 transition-all duration-300 text-sm"
                   >
-                    {editingUser ? "Update" : "Tambah"}
+                    <Plus className="h-4 w-4 mr-2" /> {editingUser ? "Update" : "Tambah"}
                   </button>
                 </div>
               </div>
